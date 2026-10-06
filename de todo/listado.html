@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ITVentas - Sistema de gestión comercial">
+    <meta name="author" content="ITVentas">
+    <title>ITVentas | Sistema de Gestión</title>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="../public/css/bootstrap.min.css">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="../public/css/font-awesome.css">
+
+    <!-- AdminLTE -->
+    <link rel="stylesheet" href="../public/css/AdminLTE.min.css">
+    <link rel="stylesheet" href="../public/css/_all-skins.min.css">
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="shortcut icon" href="../public/img/favicon.ico">
+
+    <!-- =====================================================
+         ESTILOS PERSONALIZADOS
+    ====================================================== -->
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f4f7fb;
+            color: #1f2937;
+        }
+
+        /* HEADER */
+        .main-header {
+            background: #ffffff !important;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .main-header .navbar {
+            background: #ffffff !important;
+        }
+
+        .main-header .logo {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8) !important;
+            color: #ffffff !important;
+            font-weight: 800;
+            font-size: 20px;
+            border: none;
+        }
+
+        .logo-mini,
+        .logo-lg {
+            color: #ffffff !important;
+        }
+
+        .main-header .sidebar-toggle {
+            color: #334155 !important;
+        }
+
+        .main-header .sidebar-toggle:hover {
+            background: #eff6ff !important;
+        }
+
+        /* PERFIL */
+        .user-menu > a {
+            color: #334155 !important;
+        }
+
+        .user-menu .user-image {
+            border: 2px solid #2563eb;
+        }
+
+        .user-header {
+            background: linear-gradient(135deg, #1d4ed8, #2563eb) !important;
+        }
+
+        /* SIDEBAR */
+        .main-sidebar {
+            background: linear-gradient(180deg, #0f172a, #111827) !important;
+        }
+
+        .sidebar {
+            padding-top: 10px;
+        }
+
+        .sidebar-menu > li.header {
+            background: transparent !important;
+            color: #64748b !important;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 15px 20px 8px;
+        }
+
+        .sidebar-menu > li > a {
+            margin: 4px 10px;
+            border-radius: 10px;
+            color: #cbd5e1 !important;
+            padding: 13px 15px;
+            transition: all .25s ease;
+        }
+
+        .sidebar-menu > li > a:hover {
+            background: rgba(37, 99, 235, .18) !important;
+            color: #ffffff !important;
+            transform: translateX(3px);
+        }
+
+        .sidebar-menu > li.active > a {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8) !important;
+            color: #ffffff !important;
+            box-shadow: 0 6px 18px rgba(37, 99, 235, .25);
+        }
+
+        .sidebar-menu > li > a > .fa {
+            width: 25px;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        .treeview-menu {
+            background: rgba(0,0,0,.12) !important;
+        }
+
+        .treeview-menu > li > a {
+            color: #94a3b8 !important;
+            padding: 10px 10px 10px 45px;
+            transition: .2s;
+        }
+
+        .treeview-menu > li > a:hover {
+            color: #ffffff !important;
+            background: rgba(255,255,255,.05);
+        }
+
+        /* CONTENT */
+        .content-wrapper {
+            background: #f4f7fb !important;
+        }
+
+        .content {
+            padding: 25px;
+        }
+
+        /* TITULO */
+        .page-title {
+            font-size: 28px;
+            font-weight: 800;
+            color: #0f172a;
+            margin: 0;
+        }
+
+        .page-subtitle {
+            color: #64748b;
+            margin-top: 6px;
+            font-size: 14px;
+        }
+
+        /* TARJETAS */
+        .stat-card {
+            position: relative;
+            overflow: hidden;
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 22px;
+            margin-bottom: 20px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 5px 20px rgba(15,23,42,.05);
+            transition: all .3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(15,23,42,.10);
+        }
+
+        .stat-card::after {
+            content: "";
+            position: absolute;
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            right: -30px;
+            top: -30px;
+            background: rgba(37,99,235,.08);
+        }
+
+        .stat-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            color: #ffffff;
+            margin-bottom: 15px;
+        }
+
+        .icon-blue {
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
+        }
+
+        .icon-green {
+            background: linear-gradient(135deg, #059669, #10b981);
+        }
+
+        .icon-orange {
+            background: linear-gradient(135deg, #ea580c, #f97316);
+        }
+
+        .icon-purple {
+            background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+        }
+
+        .stat-title {
+            color: #64748b;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .stat-number {
+            font-size: 28px;
+            font-weight: 800;
+            color: #0f172a;
+            margin-top: 5px;
+        }
+
+        .stat-footer {
+            font-size: 12px;
+            margin-top: 8px;
+            color: #64748b;
+        }
+
+        .positive {
+            color: #059669;
+            font-weight: 700;
+        }
+
+        /* BOX MODERNO */
+        .modern-box {
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 5px 20px rgba(15,23,42,.05);
+            overflow: hidden;
+            margin-bottom: 25px;
+        }
+
+        .modern-box-header {
+            padding: 20px 22px;
+            border-bottom: 1px solid #eef2f7;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modern-box-title {
+            font-weight: 800;
+            font-size: 17px;
+            color: #0f172a;
+        }
+
+        .modern-box-body {
+            padding: 22px;
+        }
+
+        /* BOTONES */
+        .btn-modern {
+            border: none;
+            border-radius: 9px;
+            padding: 10px 18px;
+            font-weight: 600;
+            transition: .25s;
+        }
+
+        .btn-primary-modern {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: #ffffff;
+        }
+
+        .btn-primary-modern:hover {
+            color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(37,99,235,.25);
+        }
+
+        /* ACCESOS RAPIDOS */
+        .quick-action {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            margin-bottom: 12px;
+            color: #1f2937;
+            transition: .25s;
+            background: #ffffff;
+        }
+
+        .quick-action:hover {
+            text-decoration: none;
+            color: #2563eb;
+            border-color: #bfdbfe;
+            background: #eff6ff;
+            transform: translateX(4px);
+        }
+
+        .quick-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #eff6ff;
+            color: #2563eb;
+            margin-right: 12px;
+            font-size: 17px;
+        }
+
+        .quick-title {
+            font-weight: 700;
+            font-size: 13px;
+        }
+
+        .quick-description {
+            color: #94a3b8;
+            font-size: 11px;
+        }
+
+        /* TABLA */
+        .table-modern {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .table-modern thead th {
+            background: #f8fafc;
+            color: #64748b;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            padding: 14px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .table-modern tbody td {
+            padding: 15px 14px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 13px;
+        }
+
+        .table-modern tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        /* ESTADO */
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .status-success {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .status-warning {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        /* FOOTER */
+        .main-footer {
+            background: #ffffff !important;
+            border-top: 1px solid #e5e7eb;
+            color: #64748b;
+            padding: 18px 25px;
+        }
+
+        .main-footer a {
+            color: #2563eb;
+            font-weight: 700;
+        }
+
+        @media(max-width: 767px) {
+            .content {
+                padding: 15px;
+            }
+            .page-title {
+                font-size: 22px;
+            }
+            .stat-number {
+                font-size: 24px;
+            }
+            .main-footer {
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+
+<body class="hold-transition sidebar-mini">
+<div class="wrapper">
+
+    <!-- HEADER -->
+    <header class="main-header">
+        <a href="index2.html" class="logo">
+            <span class="logo-mini"><b>IT</b></span>
+            <span class="logo-lg"><b>IT</b>Ventas</span>
+        </a>
+
+        <nav class="navbar navbar-static-top">
+            <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
+                <span class="sr-only">Navegación</span>
+            </a>
+
+            <div class="navbar-custom-menu">
+                <ul class="nav navbar-nav">
+                    <!-- NOTIFICACIONES -->
+                    <li class="dropdown notifications-menu">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                            <i class="fa fa-bell-o"></i>
+                            <span class="label label-warning">3</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li class="header">Tienes 3 notificaciones</li>
+                            <li>
+                                <ul class="menu">
+                                    <li>
+                                        <a href="#">
+                                            <i class="fa fa-shopping-cart text-aqua"></i> Nueva venta registrada
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="#">
+                                            <i class="fa fa-warning text-yellow"></i> Producto con stock bajo
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="#">
+                                            <i class="fa fa-user text-green"></i> Nuevo cliente registrado
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <!-- USUARIO -->
+                    <li class="dropdown user user-menu">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                            <img src="../public/dist/img/user2-160x160.jpg" class="user-image" alt="Usuario">
+                            <span class="hidden-xs">Juan Carlos Arcila</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li class="user-header">
+                                <img src="../public/dist/img/user2-160x160.jpg" class="img-circle" alt="Usuario">
+                                <p>
+                                    Juan Carlos Arcila
+                                    <small>Administrador del sistema</small>
+                                </p>
+                            </li>
+                            <li class="user-footer">
+                                <div class="pull-left">
+                                    <a href="#" class="btn btn-default btn-flat">
+                                        <i class="fa fa-user"></i> Perfil
+                                    </a>
+                                </div>
+                                <div class="pull-right">
+                                    <a href="#" class="btn btn-default btn-flat">
+                                        <i class="fa fa-sign-out"></i> Salir
+                                    </a>
+                                </div>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <!-- SIDEBAR -->
+    <aside class="main-sidebar">
+        <section class="sidebar">
+            <ul class="sidebar-menu">
+                <li class="header">MENÚ PRINCIPAL</li>
+
+                <!-- DASHBOARD -->
+                <li class="active">
+                    <a href="index2.html">
+                        <i class="fa fa-dashboard"></i> <span>Escritorio</span>
+                    </a>
+                </li>
+
+                <!-- ALMACÉN -->
+                <li class="treeview">
+                    <a href="#">
+                        <i class="fa fa-cubes"></i> <span>Almacén</span>
+                        <i class="fa fa-angle-left pull-right"></i>
+                    </a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a href="articulo.php">
+                                <i class="fa fa-circle-o"></i> Artículos
+                            </a>
+                        </li>
+                        <li>
+                            <a href="categoria.php">
+                                <i class="fa fa-circle-o"></i> Categorías
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- COMPRAS -->
+                <li class="treeview">
+                    <a href="#">
+                        <i class="fa fa-shopping-bag"></i> <span>Compras</span>
+                        <i class="fa fa-angle-left pull-right"></i>
+                    </a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a href="ingreso.php">
+                                <i class="fa fa-circle-o"></i> Ingresos
+                            </a>
+                        </li>
+                        <li>
+                            <a href="proveedor.php">
+                                <i class="fa fa-circle-o"></i> Proveedores
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- VENTAS -->
+                <li class="treeview">
+                    <a href="#">
+                        <i class="fa fa-line-chart"></i> <span>Ventas</span>
+                        <i class="fa fa-angle-left pull-right"></i>
+                    </a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a href="venta.php">
+                                <i class="fa fa-circle-o"></i> Ventas
+                            </a>
+                        </li>
+                        <li>
+                            <a href="cliente.php">
+                                <i class="fa fa-circle-o"></i> Clientes
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- ACCESO -->
+                <li class="treeview">
+                    <a href="#">
+                        <i class="fa fa-shield"></i> <span>Seguridad</span>
+                        <i class="fa fa-angle-left pull-right"></i>
+                    </a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a href="usuario.php">
+                                <i class="fa fa-circle-o"></i> Usuarios
+                            </a>
+                        </li>
+                        <li>
+                            <a href="permiso.php">
+                                <i class="fa fa-circle-o"></i> Permisos
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- REPORTES -->
+                <li class="header">REPORTES</li>
+                <li>
+                    <a href="consultacompras.php">
+                        <i class="fa fa-pie-chart"></i> <span>Reporte de Compras</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="consultaventas.php">
+                        <i class="fa fa-bar-chart"></i> <span>Reporte de Ventas</span>
+                    </a>
+                </li>
+
+                <!-- AYUDA -->
+                <li class="header">SISTEMA</li>
+                <li>
+                    <a href="#">
+                        <i class="fa fa-question-circle"></i> <span>Ayuda</span>
+                        <small class="label pull-right bg-red">PDF</small>
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fa fa-info-circle"></i> <span>Acerca de</span>
+                        <small class="label pull-right bg-blue">IT</small>
+                    </a>
+                </li>
+            </ul>
+        </section>
+    </aside>
+
+    <!-- CONTENIDO -->
+    <div class="content-wrapper">
+        <section class="content">
+            <!-- ENCABEZADO -->
+            <div class="row">
+                <div class="col-md-12">
+                    <h1 class="page-title">Panel de control</h1>
+                    <p class="page-subtitle">
+                        Bienvenido al sistema de gestión comercial ITVentas. Aquí tienes un resumen de la actividad de tu negocio.
+                    </p>
+                </div>
+            </div>
+
+            <br>
+
+            <!-- ESTADÍSTICAS -->
+            <div class="row">
+                <!-- VENTAS -->
+                <div class="col-lg-3 col-md-6 col-sm-6">
+                    <div class="stat-card">
+                        <div class="stat-icon icon-blue">
+                            <i class="fa fa-line-chart"></i>
+                        </div>
+                        <div class="stat-title">Ventas del mes</div>
+                        <div class="stat-number">S/ 12,850</div>
+                        <div class="stat-footer">
+                            <span class="positive"><i class="fa fa-arrow-up"></i> 12.5%</span> respecto al mes anterior
+                        </div>
+                    </div>
+                </div>
+
+                <!-- COMPRAS -->
+                <div class="col-lg-3 col-md-6 col-sm-6">
+                    <div class="stat-card">
+                        <div class="stat-icon icon-orange">
+                            <i class="fa fa-shopping-bag"></i>
+                        </div>
+                        <div class="stat-title">Compras del mes</div>
+                        <div class="stat-number">S/ 7,420</div>
+                        <div class="stat-footer">
+                            <span class="positive"><i class="fa fa-arrow-up"></i> 8.2%</span> respecto al mes anterior
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CLIENTES -->
+                <div class="col-lg-3 col-md-6 col-sm-6">
+                    <div class="stat-card">
+                        <div class="stat-icon icon-green">
+                            <i class="fa fa-users"></i>
+                        </div>
+                        <div class="stat-title">Clientes registrados</div>
+                        <div class="stat-number">248</div>
+                        <div class="stat-footer">
+                            <span class="positive">+18</span> nuevos este mes
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PRODUCTOS -->
+                <div class="col-lg-3 col-md-6 col-sm-6">
+                    <div class="stat-card">
+                        <div class="stat-icon icon-purple">
+                            <i class="fa fa-cubes"></i>
+                        </div>
+                        <div class="stat-title">Productos</div>
+                        <div class="stat-number">1,284</div>
+                        <div class="stat-footer">
+                            <span class="positive">96%</span> disponibles
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONTENIDO INFERIOR -->
+            <div class="row">
+                <!-- ACTIVIDAD -->
+                <div class="col-md-8">
+                    <div class="modern-box">
+                        <div class="modern-box-header">
+                            <div>
+                                <div class="modern-box-title">
+                                    <i class="fa fa-clock-o text-primary"></i> Actividad reciente
+                                </div>
+                            </div>
+                            <a href="venta.php" class="btn btn-modern btn-primary-modern">
+                                <i class="fa fa-plus"></i> Nueva venta
+                            </a>
+                        </div>
+                        <div class="modern-box-body">
+                            <div class="table-responsive">
+                                <table class="table-modern">
+                                    <thead>
+                                        <tr>
+                                            <th>Operación</th>
+                                            <th>Cliente</th>
+                                            <th>Fecha</th>
+                                            <th>Total</th>
+                                            <th>Estado</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><strong>Venta #00125</strong></td>
+                                            <td>Carlos Mendoza</td>
+                                            <td>Hoy, 10:35</td>
+                                            <td><strong>S/ 450.00</strong></td>
+                                            <td><span class="status status-success">Completada</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Venta #00124</strong></td>
+                                            <td>María López</td>
+                                            <td>Hoy, 09:20</td>
+                                            <td><strong>S/ 280.00</strong></td>
+                                            <td><span class="status status-success">Completada</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Compra #00089</strong></td>
+                                            <td>Distribuidora ABC</td>
+                                            <td>Ayer, 16:45</td>
+                                            <td><strong>S/ 1,250.00</strong></td>
+                                            <td><span class="status status-warning">Pendiente</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Venta #00123</strong></td>
+                                            <td>José Torres</td>
+                                            <td>Ayer, 14:10</td>
+                                            <td><strong>S/ 720.00</strong></td>
+                                            <td><span class="status status-success">Completada</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ACCIONES RÁPIDAS -->
+                <div class="col-md-4">
+                    <div class="modern-box">
+                        <div class="modern-box-header">
+                            <div class="modern-box-title">Accesos rápidos</div>
+                        </div>
+                        <div class="modern-box-body">
+                            <a href="venta.php" class="quick-action">
+                                <div class="quick-icon"><i class="fa fa-shopping-cart"></i></div>
+                                <div>
+                                    <div class="quick-title">Registrar venta</div>
+                                    <div class="quick-description">Crear una nueva venta</div>
+                                </div>
+                            </a>
+
+                            <a href="articulo.php" class="quick-action">
+                                <div class="quick-icon"><i class="fa fa-cube"></i></div>
+                                <div>
+                                    <div class="quick-title">Nuevo producto</div>
+                                    <div class="quick-description">Agregar artículo al almacén</div>
+                                </div>
+                            </a>
+
+                            <a href="cliente.php" class="quick-action">
+                                <div class="quick-icon"><i class="fa fa-user-plus"></i></div>
+                                <div>
+                                    <div class="quick-title">Nuevo cliente</div>
+                                    <div class="quick-description">Registrar cliente</div>
+                                </div>
+                            </a>
+
+                            <a href="consultaventas.php" class="quick-action">
+                                <div class="quick-icon"><i class="fa fa-file-text-o"></i></div>
+                                <div>
+                                    <div class="quick-title">Ver reportes</div>
+                                    <div class="quick-description">Consultar ventas y estadísticas</div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="main-footer">
+        <div class="pull-right hidden-xs">
+            <b>ITVentas</b> v3.0
+        </div>
+        <strong>© 2026 <a href="#">ITVentas</a></strong> — Sistema de Gestión Comercial.
+    </footer>
+
+</div>
+
+<!-- JAVASCRIPT -->
+<script src="../public/js/jquery-3.1.1.min.js"></script>
+<script src="../public/js/bootstrap.min.js"></script>
+<script src="../public/js/app.min.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const cards = document.querySelectorAll(".stat-card");
+        cards.forEach(function(card, index) {
+            card.style.opacity = "0";
+            card.style.transform = "translateY(15px)";
+            setTimeout(function() {
+                card.style.transition = "all .5s ease";
+                card.style.opacity = "1";
+                card.style.transform = "translateY(0)";
+            }, index * 100);
+        });
+    });
+</script>
+
+</body>
+</html>

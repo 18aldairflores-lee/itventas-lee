@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>ITVentas | Iniciar Sesión</title>
+  <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+
+  <!-- Bootstrap 3.3.5 -->
+  <link rel="stylesheet" href="../public/css/bootstrap.min.css">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="../public/css/font-awesome.css">
+  <!-- AdminLTE -->
+  <link rel="stylesheet" href="../public/css/AdminLTE.min.css">
+  <link rel="stylesheet" href="../public/css/blue.css">
+
+  <!-- Google Font: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body.login-page {
+      font-family: 'Inter', sans-serif;
+      background: radial-gradient(circle at 10% 20%, #1e293b 0%, #0f172a 90%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .login-box {
+      width: 100%;
+      max-width: 420px;
+      margin: 0 auto;
+    }
+
+    .login-logo {
+      margin-bottom: 25px;
+      text-align: center;
+    }
+
+    .login-logo a {
+      color: #ffffff !important;
+      font-weight: 800;
+      font-size: 30px;
+      letter-spacing: -0.5px;
+      text-decoration: none;
+    }
+
+    .login-logo span {
+      background: linear-gradient(135deg, #3b82f6, #60a5fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .login-box-body {
+      background: #ffffff;
+      padding: 38px 32px;
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .login-box-msg {
+      font-size: 15px;
+      font-weight: 600;
+      color: #64748b;
+      text-align: center;
+      padding: 0;
+      margin-bottom: 25px;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+      position: relative;
+    }
+
+    .form-control {
+      height: 48px;
+      border-radius: 12px;
+      border: 1.5px solid #e2e8f0;
+      background: #f8fafc;
+      padding: 10px 42px 10px 16px;
+      font-size: 14px;
+      color: #1e293b;
+      transition: all 0.2s ease;
+      box-shadow: none;
+    }
+
+    .form-control:focus {
+      background: #ffffff;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+    }
+
+    .form-control-feedback {
+      height: 48px;
+      line-height: 48px;
+      width: 44px;
+      color: #94a3b8;
+      font-size: 16px;
+    }
+
+    .form-options {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 18px 0 24px 0;
+      font-size: 13px;
+    }
+
+    .checkbox.icheck {
+      margin: 0;
+      padding-left: 0;
+    }
+
+    .checkbox.icheck label {
+      padding-left: 6px;
+      color: #64748b;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .forgot-link {
+      color: #2563eb;
+      font-weight: 600;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .forgot-link:hover {
+      color: #1d4ed8;
+      text-decoration: underline;
+    }
+
+    .btn-login {
+      height: 48px;
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      border: none;
+      border-radius: 12px;
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+      transition: all 0.25s ease;
+    }
+
+    .btn-login:hover,
+    .btn-login:focus {
+      color: #ffffff;
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px rgba(37, 99, 235, 0.4);
+      background: linear-gradient(135deg, #1d4ed8, #1e40af);
+    }
+
+    .btn-login:active {
+      transform: translateY(0);
+    }
+  </style>
+</head>
+
+<body class="hold-transition login-page">
+  <div class="login-box">
+    <div class="login-logo">
+      <a href="#"><b>IT</b><span>Ventas</span></a>
+    </div>
+
+    <div class="login-box-body">
+      <p class="login-box-msg">Accede con tus credenciales</p>
+
+      <form action="listado.html" method="post">
+        <div class="form-group has-feedback">
+          <input type="email" class="form-control" placeholder="Correo electrónico" required>
+          <span class="glyphicon glyphicon-envelope form-control-feedback"></span>
+        </div>
+
+        <div class="form-group has-feedback">
+          <input type="password" class="form-control" placeholder="Contraseña" required>
+          <span class="glyphicon glyphicon-lock form-control-feedback"></span>
+        </div>
+
+        <div class="form-options">
+          <div class="checkbox icheck">
+            <label>
+              <input type="checkbox"> Recordarme
+            </label>
+          </div>
+          <a href="#" class="forgot-link">¿Olvidaste tu clave?</a>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block btn-login">
+          Iniciar sesión <i class="fa fa-arrow-right" style="margin-left: 6px;"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- jQuery 2.1.4 -->
+  <script src="../public/js/jQuery-2.1.4.min.js"></script>
+  <!-- Bootstrap 3.3.5 -->
+  <script src="../public/js/bootstrap.min.js"></script>
+  <!-- iCheck -->
+  <script src="../public/js/icheck.min.js"></script>
+  <script>
+    $(function () {
+      $('input').iCheck({
+        checkboxClass: 'icheckbox_square-blue',
+        radioClass: 'iradio_square-blue',
+        increaseArea: '20%'
+      });
+    });
+  </script>
+</body>
+</html>
