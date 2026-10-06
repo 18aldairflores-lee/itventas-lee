@@ -1,9 +1,7 @@
-<?php 
+<?php
 if (strlen(session_id()) < 1) {
     session_start();
 }
-
-// Si no existe la sesión de usuario, expulsar directamente al login
 if (!isset($_SESSION["nombre"])) {
     header("Location: login.php");
     exit();
@@ -12,215 +10,186 @@ if (!isset($_SESSION["nombre"])) {
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ITVentas | Sistema de Gestión</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>ITVentas Lee | Gestión Comercial ERP</title>
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
 
-    <!-- Bootstrap 3.3.5 -->
-    <link rel="stylesheet" href="../public/css/bootstrap.min.css">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="../public/css/font-awesome.css">
-    <!-- AdminLTE -->
+    <!-- Bootstrap 3.3.7 CDN -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <!-- Google Fonts Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- AdminLTE Style -->
     <link rel="stylesheet" href="../public/css/AdminLTE.min.css">
     <link rel="stylesheet" href="../public/css/_all-skins.min.css">
 
-    <!-- DATATABLES ESTILOS -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap.min.css">
-
-    <!-- Tipografía Inter -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="shortcut icon" href="../public/img/favicon.ico">
+    <!-- DATATABLES CDN -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
 
     <style>
-        * { box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: #f4f7fb; color: #1f2937; }
-        
-        /* HEADER */
-        .main-header { 
-            background: #ffffff !important; 
-            border-bottom: 1px solid #e5e7eb;
-            max-height: 50px;
+        body, .main-header, .sidebar-menu, h1, h2, h3, h4, h5, h6 {
+            font-family: 'Poppins', sans-serif !important;
         }
-        .main-header .navbar { 
-            background: #ffffff !important; 
-            margin-left: 230px;
-            min-height: 50px;
+        .main-header .navbar {
+            background: #ffffff !important;
+            border-bottom: 1px solid #e2e8f0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
         }
         .main-header .logo {
-            background: linear-gradient(135deg, #2563eb, #1d4ed8) !important;
-            color: #ffffff !important; 
-            font-weight: 800; 
-            font-size: 20px; 
-            border: none;
-            height: 50px;
-            line-height: 50px;
+            background: #1e3a8a !important;
+            font-weight: 800;
+            letter-spacing: .5px;
         }
-        .main-header .sidebar-toggle { 
-            color: #334155 !important; 
-            padding: 15px;
-            line-height: 20px;
+        .main-header .sidebar-toggle {
+            color: #1e293b !important;
         }
-        .main-header .sidebar-toggle:hover { background: #eff6ff !important; }
-        
-        /* USUARIO */
-        .user-menu > a { 
-            color: #334155 !important; 
-            display: flex !important;
+        .main-header .sidebar-toggle:hover {
+            background: #f1f5f9 !important;
+        }
+        .navbar-custom-menu .navbar-nav > li > a {
+            color: #334155 !important;
+            font-weight: 500;
+        }
+        .navbar-custom-menu .navbar-nav > li > a:hover {
+            background: #f8fafc !important;
+        }
+        .badge-notification {
+            position: absolute;
+            top: 9px;
+            right: 7px;
+            font-size: 10px;
+            font-weight: 700;
+            background: #ef4444;
+            color: #fff;
+            border-radius: 50%;
+            padding: 2px 6px;
+        }
+        .notif-dropdown {
+            width: 310px;
+            border-radius: 14px;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+            border: 1px solid #e2e8f0;
+            padding: 0;
+            overflow: hidden;
+        }
+        .notif-header {
+            background: #f8fafc;
+            padding: 12px 16px;
+            border-bottom: 1px solid #e2e8f0;
+            font-weight: 700;
+            font-size: 13px;
+            color: #0f172a;
+            display: flex;
+            justify-content: space-between;
             align-items: center;
-            height: 50px;
-            padding: 10px 15px !important;
         }
-        .user-menu .user-image { 
-            width: 32px !important;
-            height: 32px !important;
-            border-radius: 50%;
-            object-fit: cover;
-            margin-right: 10px;
-            margin-top: 0 !important;
-            border: 2px solid #2563eb;
+        .notif-item {
+            padding: 10px 16px;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12.5px;
+            color: #334155;
+            text-decoration: none;
+            transition: background .2s ease;
         }
-        .user-header img.img-circle {
-            width: 90px !important;
-            height: 90px !important;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid rgba(255,255,255,0.7);
+        .notif-item:hover {
+            background: #f8fafc;
+            text-decoration: none;
         }
-        .user-header { 
-            background: linear-gradient(135deg, #1d4ed8, #2563eb) !important; 
-            padding: 20px;
-            text-align: center;
-        }
-        .user-header p {
-            color: #ffffff;
-            font-size: 15px;
-            margin-top: 10px;
-        }
-
-        /* SIDEBAR */
-        .main-sidebar { 
-            background: linear-gradient(180deg, #0f172a, #111827) !important; 
-            padding-top: 50px;
-        }
-        .sidebar { padding-top: 10px; }
-        .sidebar-menu > li.header { 
-            background: transparent !important; 
-            color: #64748b !important; 
-            font-size: 11px; 
-            font-weight: 700; 
-            text-transform: uppercase; 
-            padding: 15px 20px 8px; 
-        }
-        .sidebar-menu > li > a { 
-            margin: 4px 10px; 
-            border-radius: 10px; 
-            color: #cbd5e1 !important; 
-            padding: 13px 15px; 
-            transition: all .25s ease; 
-        }
-        .sidebar-menu > li > a:hover { 
-            background: rgba(37, 99, 235, .18) !important; 
-            color: #ffffff !important; 
-            transform: translateX(3px); 
-        }
-        .sidebar-menu > li.active > a { 
-            background: linear-gradient(135deg, #2563eb, #1d4ed8) !important; 
-            color: #ffffff !important; 
-            box-shadow: 0 6px 18px rgba(37, 99, 235, .25); 
-        }
-        .sidebar-menu > li > a > .fa { width: 25px; text-align: center; font-size: 16px; }
-        .treeview-menu { background: rgba(0,0,0,.12) !important; }
-        .treeview-menu > li > a { color: #94a3b8 !important; padding: 10px 10px 10px 45px; }
-        .treeview-menu > li > a:hover { color: #ffffff !important; background: rgba(255,255,255,.05); }
-        
-        /* CONTENEDOR */
-        .content-wrapper { background: #f4f7fb !important; }
-        .content { padding: 25px; }
-        .page-title { font-size: 28px; font-weight: 800; color: #0f172a; margin: 0; }
-        .page-subtitle { color: #64748b; margin-top: 6px; font-size: 14px; }
-
-        /* TARJETAS Y CONTENEDORES */
-        .modern-box { background: #ffffff; border-radius: 16px; border: 1px solid #e5e7eb; box-shadow: 0 5px 20px rgba(15,23,42,.05); overflow: hidden; margin-bottom: 25px; }
-        .modern-box-header { padding: 20px 22px; border-bottom: 1px solid #eef2f7; display: flex; justify-content: space-between; align-items: center; }
-        .modern-box-title { font-weight: 800; font-size: 17px; color: #0f172a; }
-        .modern-box-body { padding: 22px; }
-        .btn-modern { border: none; border-radius: 9px; padding: 10px 18px; font-weight: 600; transition: .25s; }
-        .btn-primary-modern { background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #ffffff; }
-        .btn-primary-modern:hover { color: #ffffff; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(37,99,235,.25); }
-        .table-modern { width: 100%; border-collapse: separate; border-spacing: 0; }
-        .table-modern thead th { background: #f8fafc; color: #64748b; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; padding: 14px; border-bottom: 1px solid #e5e7eb; }
-        .table-modern tbody td { padding: 15px 14px; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
-        .table-modern tbody tr:hover { background: #f8fafc; }
-        .status { display: inline-block; padding: 5px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
-        .status-success { background: #dcfce7; color: #15803d; }
-        .status-warning { background: #fef3c7; color: #b45309; }
-        .main-footer { background: #ffffff !important; border-top: 1px solid #e5e7eb; color: #64748b; padding: 18px 25px; }
-        .main-footer a { color: #2563eb; font-weight: 700; }
     </style>
 </head>
-
-<body class="hold-transition sidebar-mini">
+<body class="hold-transition skin-blue sidebar-mini">
 <div class="wrapper">
 
-    <header class="main-header">
-        <a href="escritorio.php" class="logo">
-            <span class="logo-mini"><b>IT</b></span>
-            <span class="logo-lg"><b>IT</b>Ventas</span>
-        </a>
+  <header class="main-header">
+    <a href="escritorio.php" class="logo">
+      <span class="logo-mini"><b>IT</b>L</span>
+      <span class="logo-lg"><b>ITVentas</b> Lee</span>
+    </a>
 
-        <nav class="navbar navbar-static-top">
-            <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
-                <span class="sr-only">Navegación</span>
+    <nav class="navbar navbar-static-top">
+      <a href="#" class="sidebar-toggle" data-toggle="push-menu" role="button">
+        <span class="sr-only">Toggle navigation</span>
+      </a>
+
+      <div class="navbar-custom-menu">
+        <ul class="nav navbar-nav">
+
+          <!-- Campana de Notificaciones de Stock Bajo -->
+          <li class="dropdown notifications-menu">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" id="btnNotificaciones">
+              <i class="fa fa-bell-o" style="font-size: 17px;"></i>
+              <span class="badge-notification" id="badgeStockBajo">0</span>
             </a>
-
-            <div class="navbar-custom-menu">
-                <ul class="nav navbar-nav">
-                    <!-- NOTIFICACIONES -->
-                    <li class="dropdown notifications-menu">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                            <i class="fa fa-bell-o"></i>
-                            <span class="label label-warning">3</span>
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li class="header">Tienes 3 notificaciones</li>
-                            <li>
-                                <ul class="menu">
-                                    <li><a href="#"><i class="fa fa-shopping-cart text-aqua"></i> Nueva venta registrada</a></li>
-                                    <li><a href="#"><i class="fa fa-warning text-yellow"></i> Producto con stock bajo</a></li>
-                                    <li><a href="#"><i class="fa fa-user text-green"></i> Nuevo cliente registrado</a></li>
-                                </ul>
-                            </li>
-                        </ul>
-                    </li>
-
-                    <!-- USUARIO CONECTADO VÍA SESIÓN -->
-                    <li class="dropdown user user-menu">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                            <img src="../files/usuarios/<?php echo !empty($_SESSION['imagen']) ? $_SESSION['imagen'] : 'mifoto.png'; ?>" class="user-image" alt="Usuario" onerror="this.src='../public/dist/img/user2-160x160.jpg'">
-                            <span class="hidden-xs"><?php echo $_SESSION['nombre']; ?></span>
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li class="user-header">
-                                <img src="../files/usuarios/<?php echo !empty($_SESSION['imagen']) ? $_SESSION['imagen'] : 'mifoto.png'; ?>" class="img-circle" alt="Usuario" onerror="this.src='../public/dist/img/user2-160x160.jpg'">
-                                <p>
-                                    <?php echo $_SESSION['nombre']; ?>
-                                    <small><?php echo $_SESSION['cargo']; ?></small>
-                                </p>
-                            </li>
-                            <li class="user-footer">
-                                <div class="pull-left">
-                                    <a href="#" class="btn btn-default btn-flat"><i class="fa fa-user"></i> Perfil</a>
-                                </div>
-                                <div class="pull-right">
-                                    <a href="../ajax/usuario.php?op=salir" class="btn btn-default btn-flat"><i class="fa fa-sign-out"></i> Salir</a>
-                                </div>
-                            </li>
-                        </ul>
-                    </li>
+            <ul class="dropdown-menu notif-dropdown">
+              <li class="notif-header">
+                <span>Alertas de Stock Crítico</span>
+                <span class="label label-danger" id="labelCantBajo">0</span>
+              </li>
+              <li>
+                <ul class="menu" id="listaStockBajo" style="list-style:none; padding:0; margin:0; max-height:220px; overflow-y:auto;">
+                  <li style="padding:15px; text-align:center; color:#94a3b8; font-size:12px;">Cargando inventario...</li>
                 </ul>
-            </div>
-        </nav>
-    </header>
+              </li>
+              <li style="text-align:center; padding:10px; background:#f8fafc; border-top:1px solid #e2e8f0;">
+                <a href="articulo.php" style="font-size:12px; font-weight:700; color:#2563eb; text-decoration:none;">Ver Almacén Completo <i class="fa fa-arrow-right"></i></a>
+              </li>
+            </ul>
+          </li>
+
+          <!-- Menú Usuario Superior -->
+          <li class="dropdown user user-menu">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" style="display:flex; align-items:center; gap:8px;">
+              <img src="../files/usuarios/<?php echo !empty($_SESSION['imagen']) ? $_SESSION['imagen'] : 'defecto.png'; ?>" class="user-image" onerror="this.src='../public/img/logo1.png';" alt="User Image">
+              <span class="hidden-xs" style="font-weight:600;"><?php echo $_SESSION['nombre']; ?></span>
+            </a>
+            <ul class="dropdown-menu" style="border-radius:12px; border:1px solid #e2e8f0; box-shadow:0 8px 24px rgba(0,0,0,0.08);">
+              <li class="user-header" style="background:#1e293b; color:#fff;">
+                <img src="../files/usuarios/<?php echo !empty($_SESSION['imagen']) ? $_SESSION['imagen'] : 'defecto.png'; ?>" class="img-circle" onerror="this.src='../public/img/logo1.png';" alt="User Image">
+                <p>
+                  <?php echo $_SESSION['nombre']; ?>
+                  <small><?php echo isset($_SESSION['login']) ? '@' . $_SESSION['login'] : 'Usuario'; ?></small>
+                </p>
+              </li>
+              <li class="user-footer" style="padding:10px; display:flex; justify-content:space-between;">
+                <a href="usuario.php" class="btn btn-default btn-flat" style="border-radius:6px; font-size:12px;"><i class="fa fa-user"></i> Mi Perfil</a>
+                <a href="../ajax/usuario.php?op=salir" class="btn btn-danger btn-flat" style="border-radius:6px; font-size:12px;"><i class="fa fa-power-off"></i> Salir</a>
+              </li>
+            </ul>
+          </li>
+
+        </ul>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Script para conectar la campana al cargar la página -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+    $(document).ready(function() {
+        $.getJSON("../ajax/articulo.php?op=alertaStock", function(data) {
+            var cant = data.length;
+            $("#badgeStockBajo").text(cant);
+            $("#labelCantBajo").text(cant + " productos");
+
+            var html = "";
+            if (cant > 0) {
+                $.each(data, function(i, item) {
+                    html += '<a href="articulo.php" class="notif-item">' +
+                              '<span><i class="fa fa-exclamation-circle text-danger" style="margin-right:6px;"></i> ' + item.nombre + '</span>' +
+                              '<span class="badge" style="background:#fee2e2; color:#ef4444; font-weight:700;">Stock: ' + item.stock + '</span>' +
+                            '</a>';
+                });
+            } else {
+                html = '<li style="padding:15px; text-align:center; color:#10b981; font-size:12px;"><i class="fa fa-check-circle"></i> Todos los artículos tienen stock suficiente.</li>';
+                $("#badgeStockBajo").hide();
+            }
+            $("#listaStockBajo").html(html);
+        });
+    });
+  </script>

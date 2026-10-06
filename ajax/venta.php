@@ -103,11 +103,16 @@ switch ($_GET["op"]) {
         break;
 
     case 'selectCliente':
-        require_once "../config/Conexion.php";
-        $sql = "SELECT idpersona, nombre FROM persona WHERE tipo_persona='Cliente'";
-        $rspta = ejecutarConsulta($sql);
-        while ($reg = $rspta->fetch_object()) {
-            echo '<option value="' . $reg->idpersona . '">' . $reg->nombre . '</option>';
+        require_once "../modelos/Persona.php";
+        $persona = new Persona();
+        $rspta = $persona->listarc();
+
+        echo '<option value="">-- Seleccione un Cliente --</option>';
+        if ($rspta) {
+            while ($reg = $rspta->fetch_object()) {
+                $doc = !empty($reg->num_documento) ? ' (' . $reg->tipo_documento . ': ' . $reg->num_documento . ')' : '';
+                echo '<option value="' . $reg->idpersona . '">' . $reg->nombre . $doc . '</option>';
+            }
         }
         break;
 

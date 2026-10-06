@@ -7,13 +7,16 @@ Class Categoria
 
     public function insertar($nombre, $descripcion)
     {
-        $sql = "INSERT INTO categoria (nombre, descripcion, condicion) VALUES ('$nombre', '$descripcion', '1')";
+        $sql = "INSERT INTO categoria (nombre, descripcion, condicion) 
+                VALUES ('$nombre', '$descripcion', '1')";
         return ejecutarConsulta($sql);
     }
 
     public function editar($idcategoria, $nombre, $descripcion)
     {
-        $sql = "UPDATE categoria SET nombre='$nombre', descripcion='$descripcion' WHERE idcategoria='$idcategoria'";
+        $sql = "UPDATE categoria 
+                SET nombre='$nombre', descripcion='$descripcion' 
+                WHERE idcategoria='$idcategoria'";
         return ejecutarConsulta($sql);
     }
 
@@ -43,7 +46,7 @@ Class Categoria
 
     public function select()
     {
-        $sql = "SELECT * FROM categoria WHERE condicion='1'";
+        $sql = "SELECT * FROM categoria WHERE condicion='1' ORDER BY nombre ASC";
         return ejecutarConsulta($sql);
     }
 }

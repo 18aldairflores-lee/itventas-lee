@@ -1,57 +1,30 @@
 var tabla;
 
-const Toast = Swal.mixin({
-    toast: true,
-    position: 'top-end',
-    showConfirmButton: false,
-    timer: 2500,
-    timerProgressBar: true
-});
-
 function init() {
+    mostrarform(false);
     listar();
-
-    $.post("../ajax/articulo.php?op=selectCategoria", function(r) {
-        $("#idcategoria").html(r);
-    });
+    cargarKPIs();
 
     $("#formulario").on("submit", function(e) {
         guardaryeditar(e);
     });
 
-    $("#imagen").change(function() {
-        mostrarPrevia(this);
-    });
+    cargarCategorias();
+    $("#imagenmuestra").hide();
+}
 
-    $("#codigo").keyup(function() {
-        generarbarcode();
+function cargarKPIs() {
+    $.getJSON("../ajax/articulo.php?op=kpisArticulo", function(data) {
+        $("#kpi-total-art").text(data.total);
+        $("#kpi-stock-art").text(data.stock);
+        $("#kpi-bajo-art").text(data.bajo);
     });
 }
 
-function mostrarPrevia(input) {
-    if (input.files && input.files[0]) {
-        var reader = new FileReader();
-        reader.onload = function(e) {
-            $("#imagenmuestra").attr("src", e.target.result).show();
-        };
-        reader.readAsDataURL(input.files[0]);
-    }
-}
-
-function generarbarcode() {
-    var codigo = $("#codigo").val();
-    if (codigo.length > 0) {
-        JsBarcode("#barcode", codigo, {
-            format: "CODE128",
-            lineColor: "#0f172a",
-            width: 2,
-            height: 40,
-            displayValue: true
-        });
-        $("#barcode").show();
-    } else {
-        $("#barcode").hide();
-    }
+function cargarCategorias() {
+    $.post("../ajax/articulo.php?op=selectCategoria", function(r) {
+        $("#idcategoria").html(r);
+    });
 }
 
 function limpiar() {
@@ -59,18 +32,31 @@ function limpiar() {
     $("#codigo").val("");
     $("#nombre").val("");
     $("#descripcion").val("");
-    $("#stock").val("");
+    $("#stock").val("0");
     $("#imagenmuestra").attr("src", "").hide();
     $("#imagenactual").val("");
     $("#imagen").val("");
-    $("#barcode").hide();
+    $("#print").hide();
+    cargarCategorias();
 }
 
-function abrirModal() {
+function mostrarform(flag) {
     limpiar();
-    $("#modalTitulo").html('<i class="fa fa-plus-circle text-primary"></i> Nuevo Artículo');
-    $("#btnGuardar").prop("disabled", false);
-    $("#modalArticulo").modal('show');
+    if (flag) {
+        $("#listadoregistros").hide();
+        $("#formularioregistros").fadeIn(250);
+        $("#btnGuardar").prop("disabled", false);
+        $("#btnagregar").hide();
+    } else {
+        $("#listadoregistros").fadeIn(250);
+        $("#formularioregistros").hide();
+        $("#btnagregar").show();
+    }
+}
+
+function cancelarform() {
+    limpiar();
+    mostrarform(false);
 }
 
 function listar() {
@@ -79,9 +65,9 @@ function listar() {
         "aServerSide": true,
         dom: 'Bfrtip',
         buttons: [
-            { extend: 'copyHtml5', className: 'btn btn-default btn-sm' },
-            { extend: 'excelHtml5', className: 'btn btn-default btn-sm' },
-            { extend: 'pdf', className: 'btn btn-default btn-sm' }
+            { extend: 'copyHtml5', text: '<i class="fa fa-copy"></i> Copiar', className: 'btn btn-default btn-sm' },
+            { extend: 'excelHtml5', text: '<i class="fa fa-file-excel-o"></i> Excel', className: 'btn btn-default btn-sm' },
+            { extend: 'pdf', text: '<i class="fa fa-file-pdf-o"></i> PDF', className: 'btn btn-default btn-sm' }
         ],
         "ajax": {
             url: '../ajax/articulo.php?op=listar',
@@ -91,45 +77,24 @@ function listar() {
                 console.log(e.responseText);
             }
         },
-        "initComplete": function(settings, json) {
-            actualizarMetricas(json);
-        },
-        "drawCallback": function(settings) {
-            var api = this.api();
-            var json = api.ajax.json();
-            if (json) {
-                actualizarMetricas(json);
-            }
-        },
         "bDestroy": true,
-        "iDisplayLength": 6,
+        "iDisplayLength": 10,
         "order": [[0, "desc"]]
     }).DataTable();
 }
 
-function actualizarMetricas(json) {
-    if (!json || !json.aaData) return;
-
-    var total = json.aaData.length;
-    var activos = 0;
-    var stockBajo = 0;
-
-    for (var i = 0; i < total; i++) {
-        if (json.aaData[i][6] && json.aaData[i][6].indexOf("Activo") !== -1) {
-            activos++;
-        }
-        if (json.aaData[i][4] && json.aaData[i][4].indexOf("stock-low") !== -1) {
-            stockBajo++;
-        }
-    }
-
-    $("#kpi-total-art").text(total);
-    $("#kpi-activos-art").text(activos);
-    $("#kpi-stock-bajo").text(stockBajo);
-}
-
 function guardaryeditar(e) {
     e.preventDefault();
+
+    if ($("#nombre").val().trim() == "") {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Nombre requerido',
+            text: 'Debe ingresar el nombre del artículo.'
+        });
+        return false;
+    }
+
     $("#btnGuardar").prop("disabled", true);
     var formData = new FormData($("#formulario")[0]);
 
@@ -140,19 +105,21 @@ function guardaryeditar(e) {
         contentType: false,
         processData: false,
         success: function(datos) {
-            $("#modalArticulo").modal('hide');
-            Toast.fire({
+            Swal.fire({
                 icon: 'success',
-                title: datos
+                title: 'Operación Exitosa',
+                text: datos,
+                confirmButtonColor: '#2563eb'
             });
+            mostrarform(false);
             tabla.ajax.reload();
-            limpiar();
+            cargarKPIs();
         },
-        error: function(xhr) {
+        error: function() {
             Swal.fire({
                 icon: 'error',
                 title: 'Error de servidor',
-                text: xhr.responseText
+                text: 'No se pudo conectar con el servidor.'
             });
             $("#btnGuardar").prop("disabled", false);
         }
@@ -160,46 +127,46 @@ function guardaryeditar(e) {
 }
 
 function mostrar(idarticulo) {
-    $.post("../ajax/articulo.php?op=mostrar", { idarticulo: idarticulo }, function(data) {
+    $.post("../ajax/articulo.php?op=mostrar", { idarticulo: idarticulo }, function(data, status) {
         data = JSON.parse(data);
-        $("#modalTitulo").html('<i class="fa fa-edit text-warning"></i> Editar Artículo');
+        mostrarform(true);
+
+        $("#idarticulo").val(data.idarticulo);
         $("#idcategoria").val(data.idcategoria);
         $("#codigo").val(data.codigo);
         $("#nombre").val(data.nombre);
         $("#stock").val(data.stock);
         $("#descripcion").val(data.descripcion);
-        $("#imagenactual").val(data.imagen);
-        $("#idarticulo").val(data.idarticulo);
 
-        if (data.imagen != "") {
-            $("#imagenmuestra").attr("src", "../files/articulos/" + data.imagen).show();
+        if (data.imagen && data.imagen != "") {
+            $("#imagenmuestra").show();
+            $("#imagenmuestra").attr("src", "../files/articulos/" + data.imagen);
+            $("#imagenactual").val(data.imagen);
         } else {
             $("#imagenmuestra").hide();
+            $("#imagenactual").val("");
         }
 
         generarbarcode();
-        $("#modalArticulo").modal('show');
     });
 }
 
 function desactivar(idarticulo) {
     Swal.fire({
-        title: '¿Desactivar artículo?',
-        text: "El artículo no estará disponible para nuevas ventas.",
+        title: '¿Desactivar este artículo?',
+        text: 'El artículo pasará a estado inactivo.',
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#d33',
+        confirmButtonColor: '#ef4444',
         cancelButtonColor: '#64748b',
         confirmButtonText: 'Sí, desactivar',
         cancelButtonText: 'Cancelar'
     }).then((result) => {
         if (result.isConfirmed) {
             $.post("../ajax/articulo.php?op=desactivar", { idarticulo: idarticulo }, function(e) {
-                Toast.fire({
-                    icon: 'info',
-                    title: e
-                });
+                Swal.fire('Completado', e, 'success');
                 tabla.ajax.reload();
+                cargarKPIs();
             });
         }
     });
@@ -207,25 +174,52 @@ function desactivar(idarticulo) {
 
 function activar(idarticulo) {
     Swal.fire({
-        title: '¿Activar artículo?',
-        text: "El artículo volverá a estar disponible en el inventario.",
+        title: '¿Activar este artículo?',
         icon: 'question',
         showCancelButton: true,
-        confirmButtonColor: '#059669',
+        confirmButtonColor: '#10b981',
         cancelButtonColor: '#64748b',
         confirmButtonText: 'Sí, activar',
         cancelButtonText: 'Cancelar'
     }).then((result) => {
         if (result.isConfirmed) {
             $.post("../ajax/articulo.php?op=activar", { idarticulo: idarticulo }, function(e) {
-                Toast.fire({
-                    icon: 'success',
-                    title: e
-                });
+                Swal.fire('Completado', e, 'success');
                 tabla.ajax.reload();
+                cargarKPIs();
             });
         }
     });
 }
+
+function generarCodigoAleatorio() {
+    var codigoRandom = Math.floor(10000000 + Math.random() * 90000000).toString();
+    $("#codigo").val(codigoRandom);
+    generarbarcode();
+}
+
+function generarbarcode() {
+    var codigo = $("#codigo").val();
+    if (codigo && codigo.trim() != "") {
+        try {
+            JsBarcode("#barcode", codigo, {
+                format: "CODE128",
+                lineColor: "#0f172a",
+                width: 2,
+                height: 40,
+                displayValue: true
+            });
+            $("#print").show();
+        } catch(e) {
+            console.log(e);
+        }
+    } else {
+        $("#print").hide();
+    }
+}
+
+$("#codigo").on("input", function() {
+    generarbarcode();
+});
 
 init();
