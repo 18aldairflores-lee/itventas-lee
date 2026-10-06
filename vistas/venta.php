@@ -1,6 +1,8 @@
 <?php
 require 'header.php';
 require 'sidebar.php';
+
+if (isset($_SESSION['ventas']) && $_SESSION['ventas'] == 1) {
 ?>
 
 <style>
@@ -235,9 +237,9 @@ require 'sidebar.php';
                 <div class="table-responsive" id="listadoregistros">
                     <table id="tbllistado" class="table table-modern table-hover" style="width:100%">
                         <thead>
-                            <th style="width: 10%;">Acciones</th>
+                            <th style="width: 12%;">Acciones</th>
                             <th style="width: 12%;">Fecha</th>
-                            <th style="width: 25%;">Cliente</th>
+                            <th style="width: 23%;">Cliente</th>
                             <th style="width: 15%;">Vendedor</th>
                             <th style="width: 18%;">Documento</th>
                             <th style="width: 10%;">Total</th>
@@ -357,9 +359,7 @@ require 'sidebar.php';
     </section>
 </div>
 
-<!-- ========================================================
-     MODAL PARA SELECCIONAR ARTÍCULOS PARA LA VENTA
-========================================================= -->
+<!-- MODAL ARTICULOS -->
 <div class="modal fade" id="modalArticulos" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content" style="border-radius: 18px; overflow:hidden;">
@@ -387,6 +387,9 @@ require 'sidebar.php';
 </div>
 
 <?php
+} else {
+    require 'noacceso.php';
+}
 require 'footer.php';
 ?>
 

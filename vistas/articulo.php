@@ -1,13 +1,11 @@
 <?php
 require 'header.php';
 require 'sidebar.php';
+
+if (isset($_SESSION['almacen']) && $_SESSION['almacen'] == 1) {
 ?>
 
-<!-- Librería JsBarcode para generar código de barras dinámico -->
-<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
-
 <style>
-    /* Tarjetas KPI Modernas */
     .kpi-wrapper {
         background: #ffffff;
         border-radius: 16px;
@@ -54,7 +52,6 @@ require 'sidebar.php';
         margin: 0;
     }
 
-    /* Caja contenedora */
     .card-shell {
         background: #ffffff;
         border-radius: 18px;
@@ -101,7 +98,6 @@ require 'sidebar.php';
         box-shadow: 0 8px 22px rgba(37, 99, 235, 0.4);
     }
 
-    /* Tabla */
     .table-modern thead th {
         background: #f8fafc;
         color: #475569;
@@ -141,18 +137,10 @@ require 'sidebar.php';
         padding: 4px 10px;
         border-radius: 12px;
         font-weight: 700;
-        font-size: 12.5px;
+        font-size: 12px;
     }
     .stock-ok { background: #dcfce7; color: #166534; }
     .stock-low { background: #fee2e2; color: #991b1b; }
-
-    .img-table {
-        width: 45px;
-        height: 45px;
-        object-fit: cover;
-        border-radius: 10px;
-        border: 1px solid #e2e8f0;
-    }
 
     .badge-pill-modern {
         display: inline-flex;
@@ -188,36 +176,6 @@ require 'sidebar.php';
     .btn-activate { background: #dcfce7; color: #15803d; }
     .btn-activate:hover { background: #bbf7d0; }
 
-    /* Modal */
-    .modal-content-custom {
-        border-radius: 20px;
-        border: 1px solid rgba(255, 255, 255, 0.4);
-        box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
-        overflow: hidden;
-    }
-    .modal-header-custom {
-        background: linear-gradient(135deg, #1e293b, #0f172a);
-        color: #ffffff;
-        padding: 20px 26px;
-        border: none;
-    }
-    .modal-header-custom .modal-title {
-        font-weight: 800;
-        font-size: 18px;
-        color: #ffffff;
-    }
-    .modal-body-custom {
-        padding: 26px;
-        background: #ffffff;
-    }
-    .modal-footer-custom {
-        padding: 16px 26px;
-        background: #f8fafc;
-        border-top: 1px solid #e2e8f0;
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-    }
     .input-field-custom {
         height: 44px;
         border-radius: 10px;
@@ -240,19 +198,18 @@ require 'sidebar.php';
 
         <div class="row">
             <div class="col-md-12">
-                <h1 class="page-title">Gestión de Artículos</h1>
-                <p class="page-subtitle">Control de inventario, stock, códigos de barra y catálogo de productos.</p>
+                <h1 class="page-title">Catálogo de Artículos</h1>
+                <p class="page-subtitle">Control de inventario, stock disponible y códigos de barras.</p>
             </div>
         </div>
 
         <br>
 
-        <!-- KPI superiores -->
         <div class="row">
             <div class="col-lg-4 col-sm-6 col-xs-12">
                 <div class="kpi-wrapper">
                     <div class="kpi-header">
-                        <span>Total Artículos</span>
+                        <span>Total de Artículos</span>
                         <div class="kpi-icon blue"><i class="fa fa-cubes"></i></div>
                     </div>
                     <h3 class="kpi-value" id="kpi-total-art">0</h3>
@@ -262,41 +219,41 @@ require 'sidebar.php';
             <div class="col-lg-4 col-sm-6 col-xs-12">
                 <div class="kpi-wrapper">
                     <div class="kpi-header">
-                        <span>Artículos Activos</span>
+                        <span>En Stock</span>
                         <div class="kpi-icon green"><i class="fa fa-check-circle"></i></div>
                     </div>
-                    <h3 class="kpi-value" id="kpi-activos-art" style="color: #059669;">0</h3>
+                    <h3 class="kpi-value" id="kpi-stock-art" style="color: #059669;">0</h3>
                 </div>
             </div>
 
             <div class="col-lg-4 col-sm-12 col-xs-12">
                 <div class="kpi-wrapper">
                     <div class="kpi-header">
-                        <span>Alerta Stock Bajo (≤ 5)</span>
+                        <span>Stock Bajo (≤ 5)</span>
                         <div class="kpi-icon orange"><i class="fa fa-exclamation-triangle"></i></div>
                     </div>
-                    <h3 class="kpi-value" id="kpi-stock-bajo" style="color: #ea580c;">0</h3>
+                    <h3 class="kpi-value" id="kpi-bajo-art" style="color: #ea580c;">0</h3>
                 </div>
             </div>
         </div>
 
-        <!-- Tabla -->
         <div class="card-shell">
             <div class="card-shell-header">
                 <div>
                     <h3 class="card-shell-title">
-                        <i class="fa fa-barcode text-primary"></i> 
-                        <span>Catálogo de Artículos</span>
+                        <i class="fa fa-box text-primary"></i> 
+                        <span>Listado de Artículos</span>
                     </h3>
                 </div>
 
-                <button class="btn-create-glow" onclick="abrirModal()">
+                <button class="btn-create-glow" id="btnagregar" onclick="mostrarform(true)">
                     <i class="fa fa-plus"></i> Nuevo Artículo
                 </button>
             </div>
 
             <div class="card-shell-body" style="padding: 24px;">
-                <div class="table-responsive">
+                
+                <div class="table-responsive" id="listadoregistros">
                     <table id="tbllistado" class="table table-modern table-hover" style="width:100%">
                         <thead>
                             <th style="width: 10%;">Acciones</th>
@@ -304,96 +261,87 @@ require 'sidebar.php';
                             <th style="width: 15%;">Categoría</th>
                             <th style="width: 15%;">Código</th>
                             <th style="width: 10%;">Stock</th>
-                            <th style="width: 15%;">Imagen</th>
-                            <th style="width: 15%;">Estado</th>
+                            <th style="width: 10%;">Imagen</th>
+                            <th style="width: 10%;">Estado</th>
                         </thead>
                         <tbody></tbody>
                     </table>
                 </div>
+
+                <div id="formularioregistros" style="display: none;">
+                    <form name="formulario" id="formulario" method="POST" enctype="multipart/form-data">
+                        <input type="hidden" name="idarticulo" id="idarticulo">
+
+                        <div class="row">
+                            <div class="col-md-6 form-group">
+                                <label>Nombre (*)</label>
+                                <input type="text" class="input-field-custom" name="nombre" id="nombre" maxlength="100" placeholder="Nombre del artículo" required>
+                            </div>
+
+                            <div class="col-md-6 form-group">
+                                <label>Categoría (*)</label>
+                                <select id="idcategoria" name="idcategoria" class="input-field-custom" required></select>
+                            </div>
+                        </div>
+
+                        <div class="row" style="margin-top: 10px;">
+                            <div class="col-md-6 form-group">
+                                <label>Stock (*)</label>
+                                <input type="number" class="input-field-custom" name="stock" id="stock" required>
+                            </div>
+
+                            <div class="col-md-6 form-group">
+                                <label>Descripción</label>
+                                <input type="text" class="input-field-custom" name="descripcion" id="descripcion" maxlength="256" placeholder="Descripción breve">
+                            </div>
+                        </div>
+
+                        <div class="row" style="margin-top: 10px;">
+                            <div class="col-md-6 form-group">
+                                <label>Imagen</label>
+                                <input type="file" class="input-field-custom" name="imagen" id="imagen" accept="image/*">
+                                <input type="hidden" name="imagenactual" id="imagenactual">
+                                <div style="margin-top: 10px;">
+                                    <img src="" width="65px" height="65px" id="imagenmuestra" style="border-radius: 12px; object-fit: cover; display: none;">
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 form-group">
+                                <label>Código de Barras</label>
+                                <input type="text" class="input-field-custom" name="codigo" id="codigo" placeholder="Código de barras">
+                                <button class="btn btn-default btn-sm" type="button" onclick="generarbarcode()" style="margin-top: 8px; border-radius: 8px;">
+                                    <i class="fa fa-barcode"></i> Generar Barra
+                                </button>
+                                <div id="print" style="margin-top: 10px;">
+                                    <svg id="barcode"></svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 25px; display: flex; gap: 10px;">
+                            <button class="btn-create-glow" type="submit" id="btnGuardar">
+                                <i class="fa fa-save"></i> Guardar
+                            </button>
+                            <button class="btn btn-default" onclick="cancelarform()" type="button" style="border-radius: 10px; font-weight:600; padding:10px 20px;">
+                                Cancelar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
             </div>
         </div>
 
     </section>
 </div>
 
-<!-- Modal -->
-<div class="modal fade" id="modalArticulo" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content modal-content-custom">
-            
-            <div class="modal-header modal-header-custom">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: #ffffff; opacity: .8;">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-                <h4 class="modal-title" id="modalTitulo">
-                    <i class="fa fa-cube" style="margin-right: 8px;"></i> Nuevo Artículo
-                </h4>
-            </div>
-
-            <form name="formulario" id="formulario" method="POST" enctype="multipart/form-data">
-                <div class="modal-body modal-body-custom">
-                    <input type="hidden" name="idarticulo" id="idarticulo">
-
-                    <div class="row">
-                        <div class="col-md-6 form-group">
-                            <label>Nombre del Artículo (*)</label>
-                            <input type="text" class="input-field-custom" name="nombre" id="nombre" maxlength="100" placeholder="Ej. Laptop Asus TUF" required>
-                        </div>
-
-                        <div class="col-md-6 form-group">
-                            <label>Categoría (*)</label>
-                            <select id="idcategoria" name="idcategoria" class="input-field-custom" required></select>
-                        </div>
-                    </div>
-
-                    <div class="row" style="margin-top: 15px;">
-                        <div class="col-md-6 form-group">
-                            <label>Stock (*)</label>
-                            <input type="number" class="input-field-custom" name="stock" id="stock" min="0" placeholder="0" required>
-                        </div>
-
-                        <div class="col-md-6 form-group">
-                            <label>Código de Barras</label>
-                            <div style="display: flex; gap: 8px;">
-                                <input type="text" class="input-field-custom" name="codigo" id="codigo" placeholder="Ej. 775123456789">
-                                <button type="button" class="btn btn-default" onclick="generarbarcode()" title="Generar Código"><i class="fa fa-refresh"></i></button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row" style="margin-top: 15px;">
-                        <div class="col-md-6 form-group">
-                            <label>Descripción</label>
-                            <textarea class="input-field-custom" name="descripcion" id="descripcion" rows="3" style="height: auto; resize: vertical;" placeholder="Detalles y características..."></textarea>
-                        </div>
-
-                        <div class="col-md-6 form-group">
-                            <label>Imagen del Producto</label>
-                            <input type="file" class="input-field-custom" name="imagen" id="imagen" accept="image/*">
-                            <input type="hidden" name="imagenactual" id="imagenactual">
-                            <div style="margin-top: 10px; display: flex; align-items: center; gap: 15px;">
-                                <img src="" width="60px" height="60px" id="imagenmuestra" style="border-radius: 10px; object-fit: cover; border: 1px solid #e2e8f0; display: none;">
-                                <svg id="barcode" style="max-height: 50px;"></svg>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-
-                <div class="modal-footer modal-footer-custom">
-                    <button type="button" class="btn btn-default" data-dismiss="modal" style="border-radius: 10px; font-weight: 600; padding: 9px 18px;">Cancelar</button>
-                    <button type="submit" id="btnGuardar" class="btn-create-glow">
-                        <i class="fa fa-check"></i> Guardar Artículo
-                    </button>
-                </div>
-            </form>
-
-        </div>
-    </div>
-</div>
-
 <?php
+} else {
+    require 'noacceso.php';
+}
 require 'footer.php';
 ?>
 
+<!-- Librería de códigos de barra JS -->
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
 <script type="text/javascript" src="scripts/articulo.js"></script>

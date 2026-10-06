@@ -1,9 +1,10 @@
 <?php
 require 'header.php';
 require 'sidebar.php';
+
+if (isset($_SESSION['escritorio']) && $_SESSION['escritorio'] == 1) {
 ?>
 
-<!-- Chart.js para visualización de métricas -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 
 <style>
@@ -82,7 +83,6 @@ require 'sidebar.php';
 <div class="content-wrapper">
     <section class="content">
 
-        <!-- Título -->
         <div class="row">
             <div class="col-md-12">
                 <h1 class="page-title">Panel de Control General</h1>
@@ -92,7 +92,6 @@ require 'sidebar.php';
 
         <br>
 
-        <!-- Fila de KPIs -->
         <div class="row">
             <div class="col-lg-3 col-sm-6 col-xs-12">
                 <div class="kpi-stat-card">
@@ -135,7 +134,6 @@ require 'sidebar.php';
             </div>
         </div>
 
-        <!-- Fila de Gráficos -->
         <div class="row">
             <div class="col-md-6 col-xs-12">
                 <div class="chart-container-card">
@@ -162,12 +160,14 @@ require 'sidebar.php';
 </div>
 
 <?php
+} else {
+    require 'noacceso.php';
+}
 require 'footer.php';
 ?>
 
 <script>
 $(document).ready(function() {
-    // 1. Cargar KPIs
     $.getJSON("../ajax/consultas.php?op=kpis", function(data) {
         $("#kpi_ventas").text("S/ " + data.total_ventas);
         $("#kpi_compras").text("S/ " + data.total_compras);
@@ -175,7 +175,6 @@ $(document).ready(function() {
         $("#kpi_clientes").text(data.total_clientes);
     });
 
-    // 2. Gráfico Compras
     $.getJSON("../ajax/consultas.php?op=comprasUltimos10Dias", function(data) {
         var ctxCompras = document.getElementById('comprasChart').getContext('2d');
         new Chart(ctxCompras, {
@@ -199,7 +198,6 @@ $(document).ready(function() {
         });
     });
 
-    // 3. Gráfico Ventas
     $.getJSON("../ajax/consultas.php?op=ventasUltimos10Dias", function(data) {
         var ctxVentas = document.getElementById('ventasChart').getContext('2d');
         new Chart(ctxVentas, {

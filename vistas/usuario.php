@@ -1,6 +1,8 @@
 <?php
 require 'header.php';
 require 'sidebar.php';
+
+if (isset($_SESSION['acceso']) && $_SESSION['acceso'] == 1) {
 ?>
 
 <style>
@@ -289,6 +291,9 @@ require 'sidebar.php';
 </div>
 
 <?php
+} else {
+    require 'noacceso.php';
+}
 require 'footer.php';
 ?>
 
