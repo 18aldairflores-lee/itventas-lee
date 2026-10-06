@@ -9,7 +9,7 @@ $venta = new Venta();
 
 $idventa = isset($_POST["idventa"]) ? limpiarCadena($_POST["idventa"]) : "";
 $idcliente = isset($_POST["idcliente"]) ? limpiarCadena($_POST["idcliente"]) : "";
-$idusuario = $_SESSION["idusuario"];
+$idusuario = isset($_SESSION["idusuario"]) ? $_SESSION["idusuario"] : "1";
 $tipo_comprobante = isset($_POST["tipo_comprobante"]) ? limpiarCadena($_POST["tipo_comprobante"]) : "";
 $serie_comprobante = isset($_POST["serie_comprobante"]) ? limpiarCadena($_POST["serie_comprobante"]) : "";
 $num_comprobante = isset($_POST["num_comprobante"]) ? limpiarCadena($_POST["num_comprobante"]) : "";
@@ -74,11 +74,15 @@ switch ($_GET["op"]) {
         $data = Array();
 
         while ($reg = $rspta->fetch_object()) {
+            $url = '../reportes/exTicket.php?id=' . $reg->idventa;
+
             $data[] = array(
                 "0" => ($reg->estado == 'Aceptado') ? 
                     '<button class="action-circle-btn btn-view" onclick="mostrar('.$reg->idventa.')" title="Ver Detalles"><i class="fa fa-eye"></i></button> '.
+                    '<a target="_blank" href="'.$url.'" class="action-circle-btn" title="Imprimir Ticket" style="background:#0284c7; color:#fff; display:inline-flex; align-items:center; justify-content:center; text-decoration:none;"><i class="fa fa-print"></i></a> '.
                     '<button class="action-circle-btn btn-deactivate" onclick="anular('.$reg->idventa.')" title="Anular"><i class="fa fa-close"></i></button>' :
-                    '<button class="action-circle-btn btn-view" onclick="mostrar('.$reg->idventa.')" title="Ver Detalles"><i class="fa fa-eye"></i></button>',
+                    '<button class="action-circle-btn btn-view" onclick="mostrar('.$reg->idventa.')" title="Ver Detalles"><i class="fa fa-eye"></i></button> '.
+                    '<a target="_blank" href="'.$url.'" class="action-circle-btn" title="Imprimir Ticket" style="background:#0284c7; color:#fff; display:inline-flex; align-items:center; justify-content:center; text-decoration:none;"><i class="fa fa-print"></i></a>',
                 "1" => $reg->fecha,
                 "2" => '<strong>'.$reg->cliente.'</strong>',
                 "3" => $reg->usuario,
@@ -115,7 +119,6 @@ switch ($_GET["op"]) {
 
         while ($reg = $rspta->fetch_object()) {
             if ($reg->condicion == 1) {
-                // Obtener el último precio de venta registrado en compras para sugerirlo
                 $sql_pv = "SELECT precio_venta FROM detalle_ingreso WHERE idarticulo='$reg->idarticulo' ORDER BY iddetalle_ingreso DESC LIMIT 1";
                 $pv_query = ejecutarConsultaSimpleFila($sql_pv);
                 $precio_venta_sugerido = isset($pv_query["precio_venta"]) ? $pv_query["precio_venta"] : "10.00";
