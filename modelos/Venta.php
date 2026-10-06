@@ -1,83 +1,94 @@
 <?php 
 require "../config/Conexion.php";
 
-Class Venta
+Class Usuario
 {
     public function __construct() {}
 
-    // Registrar venta con descuento automático de stock
-    public function insertar($idcliente, $idusuario, $tipo_comprobante, $serie_comprobante, $num_comprobante, $fecha_hora, $impuesto, $total_venta, $idarticulo, $cantidad, $precio_venta, $descuento)
+    // Insertar usuario junto con sus permisos asignados
+    public function insertar($nombre, $tipo_documento, $num_documento, $direccion, $telefono, $email, $cargo, $login, $clave, $imagen, $permisos)
     {
-        $sql = "INSERT INTO venta (idcliente, idusuario, tipo_comprobante, serie_comprobante, num_comprobante, fecha_hora, impuesto, total_venta, estado) 
-                VALUES ('$idcliente', '$idusuario', '$tipo_comprobante', '$serie_comprobante', '$num_comprobante', '$fecha_hora', '$impuesto', '$total_venta', 'Aceptado')";
-        
-        $idventanew = ejecutarConsulta_retornarID($sql);
+        $sql = "INSERT INTO usuario (nombre, tipo_documento, num_documento, direccion, telefono, email, cargo, login, clave, imagen, condicion) 
+                VALUES ('$nombre', '$tipo_documento', '$num_documento', '$direccion', '$telefono', '$email', '$cargo', '$login', '$clave', '$imagen', '1')";
+        $idusuarionew = ejecutarConsulta_retornarID($sql);
 
         $num_elementos = 0;
         $sw = true;
 
-        while ($num_elementos < count($idarticulo)) {
-            $sql_detalle = "INSERT INTO detalle_venta (idventa, idarticulo, cantidad, precio_venta, descuento) 
-                            VALUES ('$idventanew', '$idarticulo[$num_elementos]', '$cantidad[$num_elementos]', '$precio_venta[$num_elementos]', '$descuento[$num_elementos]')";
-            ejecutarConsulta($sql_detalle) or $sw = false;
-
-            // Descontar del stock en almacén
-            $sql_stock = "UPDATE articulo SET stock = stock - '$cantidad[$num_elementos]' WHERE idarticulo='$idarticulo[$num_elementos]'";
-            ejecutarConsulta($sql_stock) or $sw = false;
-
-            $num_elementos++;
+        if (!empty($permisos)) {
+            while ($num_elementos < count($permisos)) {
+                $sql_detalle = "INSERT INTO usuario_permiso (idusuario, idpermiso) VALUES ('$idusuarionew', '$permisos[$num_elementos]')";
+                ejecutarConsulta($sql_detalle) or $sw = false;
+                $num_elementos++;
+            }
         }
 
         return $sw;
     }
 
-    // Anular venta y reponer el stock
-    public function anular($idventa)
+    // Editar usuario y actualizar permisos
+    public function editar($idusuario, $nombre, $tipo_documento, $num_documento, $direccion, $telefono, $email, $cargo, $login, $clave, $imagen, $permisos)
     {
-        $sql = "UPDATE venta SET estado='Anulado' WHERE idventa='$idventa'";
-        $sw = ejecutarConsulta($sql);
+        $sql = "UPDATE usuario 
+                SET nombre='$nombre', tipo_documento='$tipo_documento', num_documento='$num_documento', direccion='$direccion', telefono='$telefono', email='$email', cargo='$cargo', login='$login', clave='$clave', imagen='$imagen' 
+                WHERE idusuario='$idusuario'";
+        ejecutarConsulta($sql);
 
-        // Devolver el stock de los productos vendidos
-        $sql_det = "SELECT idarticulo, cantidad FROM detalle_venta WHERE idventa='$idventa'";
-        $detalles = ejecutarConsulta($sql_det);
+        // Eliminar permisos previos y reinsertar los nuevos
+        $sqldel = "DELETE FROM usuario_permiso WHERE idusuario='$idusuario'";
+        ejecutarConsulta($sqldel);
 
-        while ($reg = $detalles->fetch_object()) {
-            $sql_sumar = "UPDATE articulo SET stock = stock + '$reg->cantidad' WHERE idarticulo='$reg->idarticulo'";
-            ejecutarConsulta($sql_sumar);
+        $num_elementos = 0;
+        $sw = true;
+
+        if (!empty($permisos)) {
+            while ($num_elementos < count($permisos)) {
+                $sql_detalle = "INSERT INTO usuario_permiso (idusuario, idpermiso) VALUES ('$idusuario', '$permisos[$num_elementos]')";
+                ejecutarConsulta($sql_detalle) or $sw = false;
+                $num_elementos++;
+            }
         }
 
         return $sw;
     }
 
-    // Cabecera de venta
-    public function mostrar($idventa)
+    public function desactivar($idusuario)
     {
-        $sql = "SELECT v.idventa, DATE(v.fecha_hora) as fecha, v.idcliente, p.nombre as cliente, u.idusuario, u.nombre as usuario, v.tipo_comprobante, v.serie_comprobante, v.num_comprobante, v.total_venta, v.impuesto, v.estado 
-                FROM venta v 
-                INNER JOIN persona p ON v.idcliente = p.idpersona 
-                INNER JOIN usuario u ON v.idusuario = u.idusuario 
-                WHERE v.idventa='$idventa'";
-        return ejecutarConsultaSimpleFila($sql);
-    }
-
-    // Detalle de ítems vendidos
-    public function listarDetalle($idventa)
-    {
-        $sql = "SELECT dv.idventa, dv.idarticulo, a.nombre, dv.cantidad, dv.precio_venta, dv.descuento, (dv.cantidad*dv.precio_venta - dv.descuento) as subtotal 
-                FROM detalle_venta dv 
-                INNER JOIN articulo a ON dv.idarticulo = a.idarticulo 
-                WHERE dv.idventa='$idventa'";
+        $sql = "UPDATE usuario SET condicion='0' WHERE idusuario='$idusuario'";
         return ejecutarConsulta($sql);
     }
 
-    // Listar historial de ventas
+    public function activar($idusuario)
+    {
+        $sql = "UPDATE usuario SET condicion='1' WHERE idusuario='$idusuario'";
+        return ejecutarConsulta($sql);
+    }
+
+    public function mostrar($idusuario)
+    {
+        $sql = "SELECT * FROM usuario WHERE idusuario='$idusuario'";
+        return ejecutarConsultaSimpleFila($sql);
+    }
+
     public function listar()
     {
-        $sql = "SELECT v.idventa, DATE(v.fecha_hora) as fecha, v.idcliente, p.nombre as cliente, u.idusuario, u.nombre as usuario, v.tipo_comprobante, v.serie_comprobante, v.num_comprobante, v.total_venta, v.impuesto, v.estado 
-                FROM venta v 
-                INNER JOIN persona p ON v.idcliente = p.idpersona 
-                INNER JOIN usuario u ON v.idusuario = u.idusuario 
-                ORDER BY v.idventa DESC";
+        $sql = "SELECT * FROM usuario ORDER BY idusuario DESC";
+        return ejecutarConsulta($sql);
+    }
+
+    // Listar permisos activos asignados al usuario para marcarlos en el formulario
+    public function listarmarcados($idusuario)
+    {
+        $sql = "SELECT * FROM usuario_permiso WHERE idusuario='$idusuario'";
+        return ejecutarConsulta($sql);
+    }
+
+    // Verificación de credenciales para login
+    public function verificar($login, $clave)
+    {
+        $sql = "SELECT idusuario, nombre, tipo_documento, num_documento, telefono, email, cargo, imagen, login 
+                FROM usuario 
+                WHERE login='$login' AND clave='$clave' AND condicion='1'";
         return ejecutarConsulta($sql);
     }
 }
