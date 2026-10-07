@@ -3,38 +3,42 @@ var tabla;
 function init() {
     mostrarform(false);
     listar();
+    cargarKPIsVenta();
 
     $("#formulario").on("submit", function(e) {
         guardaryeditar(e);
     });
 
-    // Cargar selector de clientes
-    cargarClientes();
-
-    // Fecha actual predeterminada
-    var now = new Date();
-    var day = ("0" + now.getDate()).slice(-2);
-    var month = ("0" + (now.getMonth() + 1)).slice(-2);
-    var today = now.getFullYear() + "-" + (month) + "-" + (day);
-    $('#fecha_hora').val(today);
-}
-
-function cargarClientes() {
     $.post("../ajax/venta.php?op=selectCliente", function(r) {
         $("#idcliente").html(r);
+        if ($.fn.selectpicker) {
+            $('#idcliente').selectpicker('refresh');
+        }
+    });
+
+    $('#mCompras').addClass("treeview active");
+    $('#lVentas').addClass("active");
+}
+
+function cargarKPIsVenta() {
+    $.getJSON("../ajax/venta.php?op=kpisVenta", function(data) {
+        $("#kpi-total-ventas").text(data.total);
+        $("#kpi-ingresos-ventas").text("S/ " + parseFloat(data.ingresos).toFixed(2));
+        $("#kpi-aceptadas-ventas").text(data.aceptadas);
     });
 }
 
 function limpiar() {
     $("#idcliente").val("");
+    if ($.fn.selectpicker) {
+        $('#idcliente').selectpicker('refresh');
+    }
     $("#serie_comprobante").val("");
     $("#num_comprobante").val("");
-    $("#impuesto").val("0.18");
+    $("#impuesto").val("18");
     $("#total_venta").val("");
     $(".filas").remove();
-    $("#total_mostrado").html("S/ 0.00");
-    $("#subtotal_mostrado").html("S/ 0.00");
-    $("#igv_mostrado").html("S/ 0.00");
+    $("#total").html("S/ 0.00");
 
     var now = new Date();
     var day = ("0" + now.getDate()).slice(-2);
@@ -42,22 +46,23 @@ function limpiar() {
     var today = now.getFullYear() + "-" + (month) + "-" + (day);
     $('#fecha_hora').val(today);
 
-    cargarClientes();
+    $("#tipo_comprobante").val("Boleta");
 }
 
 function mostrarform(flag) {
     limpiar();
     if (flag) {
         $("#listadoregistros").hide();
-        $("#formularioregistros").fadeIn(300);
+        $("#formularioregistros").fadeIn(250);
+        $("#btnGuardar").prop("disabled", false);
         $("#btnagregar").hide();
         listarArticulos();
 
-        $("#btnGuardar").hide();
+        $("#btnGuardar").show();
         $("#btnCancelar").show();
         detalles = 0;
     } else {
-        $("#listadoregistros").fadeIn(300);
+        $("#listadoregistros").fadeIn(250);
         $("#formularioregistros").hide();
         $("#btnagregar").show();
     }
@@ -88,12 +93,12 @@ function listar() {
         },
         "bDestroy": true,
         "iDisplayLength": 10,
-        "order": [[1, "desc"]]
+        "order": [[0, "desc"]]
     }).DataTable();
 }
 
 function listarArticulos() {
-    $('#tblarticulos').dataTable({
+    tabla = $('#tblarticulos').dataTable({
         "aProcessing": true,
         "aServerSide": true,
         dom: 'Bfrtip',
@@ -107,28 +112,33 @@ function listarArticulos() {
             }
         },
         "bDestroy": true,
-        "iDisplayLength": 6,
-        "order": [[1, "asc"]]
+        "iDisplayLength": 5,
+        "order": [[0, "desc"]]
     }).DataTable();
-}
-
-function abrirModalArticulos() {
-    listarArticulos();
-    $('#modalArticulos').modal('show');
 }
 
 function guardaryeditar(e) {
     e.preventDefault();
 
-    if ($("#idcliente").val() == "") {
+    if ($("#idcliente").val() == "" || $("#idcliente").val() == null) {
         Swal.fire({
             icon: 'warning',
-            title: 'Atención',
-            text: 'Debe seleccionar un cliente antes de emitir la venta.'
+            title: 'Cliente Requerido',
+            text: 'Seleccione un cliente válido para emitir la venta.'
         });
         return false;
     }
 
+    if (detalles == 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Sin artículos',
+            text: 'Debe agregar al menos un artículo a la venta.'
+        });
+        return false;
+    }
+
+    $("#btnGuardar").prop("disabled", true);
     var formData = new FormData($("#formulario")[0]);
 
     $.ajax({
@@ -140,12 +150,21 @@ function guardaryeditar(e) {
         success: function(datos) {
             Swal.fire({
                 icon: 'success',
-                title: '¡Operación Exitosa!',
+                title: 'Operación Exitosa',
                 text: datos,
                 confirmButtonColor: '#2563eb'
             });
             mostrarform(false);
             listar();
+            cargarKPIsVenta();
+        },
+        error: function(xhr, status, error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error de servidor',
+                text: 'No se pudo conectar con el servidor: ' + error
+            });
+            $("#btnGuardar").prop("disabled", false);
         }
     });
 }
@@ -156,6 +175,9 @@ function mostrar(idventa) {
         mostrarform(true);
 
         $("#idcliente").val(data.idcliente);
+        if ($.fn.selectpicker) {
+            $('#idcliente').selectpicker('refresh');
+        }
         $("#tipo_comprobante").val(data.tipo_comprobante);
         $("#serie_comprobante").val(data.serie_comprobante);
         $("#num_comprobante").val(data.num_comprobante);
@@ -165,6 +187,7 @@ function mostrar(idventa) {
 
         $("#btnGuardar").hide();
         $("#btnCancelar").show();
+        $("#btnAgregarArt").hide();
     });
 
     $.post("../ajax/venta.php?op=listarDetalle&id=" + idventa, function(r) {
@@ -174,24 +197,20 @@ function mostrar(idventa) {
 
 function anular(idventa) {
     Swal.fire({
-        title: '¿Está seguro de anular la venta?',
-        text: "Esta acción devolverá los productos al stock del almacén.",
+        title: '¿Anular esta venta?',
+        text: 'La venta pasará a estado Anulado y no sumará en los ingresos.',
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#ef4444',
         cancelButtonColor: '#64748b',
-        confirmButtonText: 'Sí, anular venta',
+        confirmButtonText: 'Sí, anular',
         cancelButtonText: 'Cancelar'
     }).then((result) => {
         if (result.isConfirmed) {
             $.post("../ajax/venta.php?op=anular", { idventa: idventa }, function(e) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Venta Anulada',
-                    text: e,
-                    confirmButtonColor: '#2563eb'
-                });
+                Swal.fire('Completado', e, 'success');
                 tabla.ajax.reload();
+                cargarKPIsVenta();
             });
         }
     });
@@ -200,7 +219,7 @@ function anular(idventa) {
 var cont = 0;
 var detalles = 0;
 
-function agregarDetalle(idarticulo, articulo, precio_venta, stock) {
+function agregarDetalle(idarticulo, articulo, precio_venta) {
     var cantidad = 1;
     var descuento = 0;
 
@@ -208,17 +227,18 @@ function agregarDetalle(idarticulo, articulo, precio_venta, stock) {
         var subtotal = cantidad * precio_venta;
         var fila = '<tr class="filas" id="fila' + cont + '">' +
             '<td><button type="button" class="btn btn-danger btn-xs" onclick="eliminarDetalle(' + cont + ')"><i class="fa fa-close"></i></button></td>' +
-            '<td><input type="hidden" name="idarticulo[]" value="' + idarticulo + '"><strong>' + articulo + '</strong></td>' +
-            '<td><input type="number" class="input-field-custom" name="cantidad[]" id="cantidad[]" min="1" max="' + stock + '" value="' + cantidad + '" onchange="modificarSubotales()" style="width:85px; height:36px; padding:4px 8px;"></td>' +
-            '<td><input type="number" step="0.01" class="input-field-custom" name="precio_venta[]" id="precio_venta[]" value="' + precio_venta + '" onchange="modificarSubotales()" style="width:105px; height:36px; padding:4px 8px;"></td>' +
-            '<td><input type="number" step="0.01" class="input-field-custom" name="descuento[]" value="' + descuento + '" onchange="modificarSubotales()" style="width:95px; height:36px; padding:4px 8px;"></td>' +
-            '<td><span name="subtotal" id="subtotal' + cont + '" style="font-weight:700;">' + subtotal.toFixed(2) + '</span></td>' +
+            '<td><input type="hidden" name="idarticulo[]" value="' + idarticulo + '">' + articulo + '</td>' +
+            '<td><input type="number" name="cantidad[]" id="cantidad[]" value="' + cantidad + '" min="1" onchange="modificarSubotales()"></td>' +
+            '<td><input type="number" name="precio_venta[]" id="precio_venta[]" value="' + precio_venta + '" step="0.01" onchange="modificarSubotales()"></td>' +
+            '<td><input type="number" name="descuento[]" value="' + descuento + '" step="0.01" onchange="modificarSubotales()"></td>' +
+            '<td><span name="subtotal" id="subtotal' + cont + '">' + subtotal + '</span></td>' +
             '</tr>';
         cont++;
-        detalles++;
+        detalles = detalles + 1;
         $('#detalles').append(fila);
         modificarSubotales();
-        $('#modalArticulos').modal('hide');
+    } else {
+        alert("Error al ingresar el detalle");
     }
 }
 
@@ -235,7 +255,7 @@ function modificarSubotales() {
         var inpS = sub[i];
 
         inpS.value = (inpC.value * inpP.value) - inpD.value;
-        document.getElementsByName("subtotal")[i].innerHTML = "S/ " + Number(inpS.value).toFixed(2);
+        document.getElementsByName("subtotal")[i].innerHTML = "S/ " + inpS.value.toFixed(2);
     }
     calcularTotales();
 }
@@ -247,16 +267,8 @@ function calcularTotales() {
     for (var i = 0; i < sub.length; i++) {
         total += document.getElementsByName("subtotal")[i].value;
     }
-
-    var impuesto = $("#impuesto").val() || 0.18;
-    var subtotal_sin_igv = total / (1 + parseFloat(impuesto));
-    var igv = total - subtotal_sin_igv;
-
-    $("#subtotal_mostrado").html("S/ " + subtotal_sin_igv.toFixed(2));
-    $("#igv_mostrado").html("S/ " + igv.toFixed(2));
-    $("#total_mostrado").html("S/ " + total.toFixed(2));
+    $("#total").html("S/ " + total.toFixed(2));
     $("#total_venta").val(total.toFixed(2));
-
     evaluar();
 }
 

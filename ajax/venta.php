@@ -1,8 +1,8 @@
 <?php 
-if (strlen(session_id()) < 1) {
+ob_start();
+if (strlen(session_id()) < 1){
     session_start();
 }
-
 require_once "../modelos/Venta.php";
 
 $venta = new Venta();
@@ -14,20 +14,25 @@ $tipo_comprobante = isset($_POST["tipo_comprobante"]) ? limpiarCadena($_POST["ti
 $serie_comprobante = isset($_POST["serie_comprobante"]) ? limpiarCadena($_POST["serie_comprobante"]) : "";
 $num_comprobante = isset($_POST["num_comprobante"]) ? limpiarCadena($_POST["num_comprobante"]) : "";
 $fecha_hora = isset($_POST["fecha_hora"]) ? limpiarCadena($_POST["fecha_hora"]) : "";
-$impuesto = isset($_POST["impuesto"]) ? limpiarCadena($_POST["impuesto"]) : "";
-$total_venta = isset($_POST["total_venta"]) ? limpiarCadena($_POST["total_venta"]) : "";
+$impuesto = isset($_POST["impuesto"]) ? limpiarCadena($_POST["impuesto"]) : "0";
+$total_venta = isset($_POST["total_venta"]) ? limpiarCadena($_POST["total_venta"]) : "0";
 
-switch ($_GET["op"]) {
+switch ($_GET["op"]){
     case 'guardaryeditar':
-        if (empty($idventa)) {
-            $rspta = $venta->insertar($idcliente, $idusuario, $tipo_comprobante, $serie_comprobante, $num_comprobante, $fecha_hora, $impuesto, $total_venta, $_POST["idarticulo"], $_POST["cantidad"], $_POST["precio_venta"], $_POST["descuento"]);
-            echo $rspta ? "Venta registrada exitosamente" : "No se pudieron guardar todos los detalles de la venta";
+        if (empty($idventa)){
+            $idarticulo = isset($_POST["idarticulo"]) ? $_POST["idarticulo"] : array();
+            $cantidad = isset($_POST["cantidad"]) ? $_POST["cantidad"] : array();
+            $precio_venta = isset($_POST["precio_venta"]) ? $_POST["precio_venta"] : array();
+            $descuento = isset($_POST["descuento"]) ? $_POST["descuento"] : array();
+
+            $rspta = $venta->insertar($idcliente, $idusuario, $tipo_comprobante, $serie_comprobante, $num_comprobante, $fecha_hora, $impuesto, $total_venta, $idarticulo, $cantidad, $precio_venta, $descuento);
+            echo $rspta ? "Venta registrada exitosamente" : "No se pudieron registrar todos los datos de la venta";
         }
         break;
 
     case 'anular':
         $rspta = $venta->anular($idventa);
-        echo $rspta ? "Venta anulada y stock devuelto a almacén" : "No se pudo anular la venta";
+        echo $rspta ? "Venta anulada correctamente" : "No se pudo anular la venta";
         break;
 
     case 'mostrar':
@@ -39,25 +44,25 @@ switch ($_GET["op"]) {
         $id = $_GET['id'];
         $rspta = $venta->listarDetalle($id);
         $total = 0;
-        echo '<thead style="background-color:#f8fafc; color:#475569; font-size:12px;">
+        echo '<thead style="background-color:#A9D0F5">
                 <th>Opciones</th>
                 <th>Artículo</th>
                 <th>Cantidad</th>
                 <th>Precio Venta</th>
                 <th>Descuento</th>
                 <th>Subtotal</th>
-              </thead>';
+            </thead>';
 
-        while ($reg = $rspta->fetch_object()) {
-            $total += $reg->subtotal;
+        while ($reg = $rspta->fetch_object()){
             echo '<tr class="filas">
                     <td></td>
-                    <td><strong>'.$reg->nombre.'</strong></td>
+                    <td>'.$reg->nombre.'</td>
                     <td>'.$reg->cantidad.'</td>
                     <td>S/ '.number_format($reg->precio_venta, 2).'</td>
                     <td>S/ '.number_format($reg->descuento, 2).'</td>
-                    <td><strong>S/ '.number_format($reg->subtotal, 2).'</strong></td>
-                  </tr>';
+                    <td>S/ '.number_format(($reg->cantidad * $reg->precio_venta - $reg->descuento), 2).'</td>
+                </tr>';
+            $total = $total + ($reg->cantidad * $reg->precio_venta - $reg->descuento);
         }
         echo '<tfoot>
                 <th>TOTAL</th>
@@ -65,29 +70,29 @@ switch ($_GET["op"]) {
                 <th></th>
                 <th></th>
                 <th></th>
-                <th><h4 style="color:#2563eb; font-weight:800; margin:0;">S/ '.number_format($total, 2).'</h4></th>
-              </tfoot>';
+                <th><h4 id="total">S/ '.number_format($total, 2).'</h4></th>
+            </tfoot>';
         break;
 
     case 'listar':
         $rspta = $venta->listar();
         $data = Array();
 
-        while ($reg = $rspta->fetch_object()) {
-            $url = '../reportes/exTicket.php?id=' . $reg->idventa;
+        while ($reg = $rspta->fetch_object()){
+            $url = '../reportes/exTicket.php?id=';
 
             $data[] = array(
-                "0" => ($reg->estado == 'Aceptado') ? 
-                    '<button class="action-circle-btn btn-view" onclick="mostrar('.$reg->idventa.')" title="Ver Detalles"><i class="fa fa-eye"></i></button> '.
-                    '<a target="_blank" href="'.$url.'" class="action-circle-btn" title="Imprimir Ticket" style="background:#0284c7; color:#fff; display:inline-flex; align-items:center; justify-content:center; text-decoration:none;"><i class="fa fa-print"></i></a> '.
-                    '<button class="action-circle-btn btn-deactivate" onclick="anular('.$reg->idventa.')" title="Anular"><i class="fa fa-close"></i></button>' :
-                    '<button class="action-circle-btn btn-view" onclick="mostrar('.$reg->idventa.')" title="Ver Detalles"><i class="fa fa-eye"></i></button> '.
-                    '<a target="_blank" href="'.$url.'" class="action-circle-btn" title="Imprimir Ticket" style="background:#0284c7; color:#fff; display:inline-flex; align-items:center; justify-content:center; text-decoration:none;"><i class="fa fa-print"></i></a>',
+                "0" => (($reg->estado == 'Aceptado') ? 
+                    '<button class="action-circle-btn btn-view" onclick="mostrar('.$reg->idventa.')" title="Ver Detalle"><i class="fa fa-eye"></i></button> '.
+                    '<a target="_blank" href="'.$url.$reg->idventa.'" class="action-circle-btn btn-print" title="Imprimir Ticket QR"><i class="fa fa-print"></i></a> '.
+                    '<button class="action-circle-btn btn-cancel" onclick="anular('.$reg->idventa.')" title="Anular Venta"><i class="fa fa-close"></i></button>' :
+                    '<button class="action-circle-btn btn-view" onclick="mostrar('.$reg->idventa.')" title="Ver Detalle"><i class="fa fa-eye"></i></button> '.
+                    '<a target="_blank" href="'.$url.$reg->idventa.'" class="action-circle-btn btn-print" title="Imprimir Ticket QR"><i class="fa fa-print"></i></a>'),
                 "1" => $reg->fecha,
                 "2" => '<strong>'.$reg->cliente.'</strong>',
                 "3" => $reg->usuario,
-                "4" => '<span class="badge-cat">'.$reg->tipo_comprobante.': '.$reg->serie_comprobante.'-'.$reg->num_comprobante.'</span>',
-                "5" => '<span style="font-weight:700; color:#0f172a;">S/ '.number_format($reg->total_venta, 2).'</span>',
+                "4" => '<span class="doc-badge">'.$reg->tipo_comprobante.': '.$reg->serie_comprobante.'-'.$reg->num_comprobante.'</span>',
+                "5" => '<strong>S/ '.number_format($reg->total_venta, 2).'</strong>',
                 "6" => ($reg->estado == 'Aceptado') ? 
                     '<span class="badge-pill-modern badge-pill-success"><span class="dot-indicator"></span> Aceptado</span>' : 
                     '<span class="badge-pill-modern badge-pill-danger"><span class="dot-indicator"></span> Anulado</span>'
@@ -105,42 +110,33 @@ switch ($_GET["op"]) {
     case 'selectCliente':
         require_once "../modelos/Persona.php";
         $persona = new Persona();
-        $rspta = $persona->listarc();
+        $rspta = $persona->listarC();
 
         echo '<option value="">-- Seleccione un Cliente --</option>';
-        if ($rspta) {
-            while ($reg = $rspta->fetch_object()) {
-                $doc = !empty($reg->num_documento) ? ' (' . $reg->tipo_documento . ': ' . $reg->num_documento . ')' : '';
-                echo '<option value="' . $reg->idpersona . '">' . $reg->nombre . $doc . '</option>';
-            }
+        while ($reg = $rspta->fetch_object()){
+            $doc = !empty($reg->num_documento) ? " (".$reg->tipo_documento.": ".$reg->num_documento.")" : "";
+            echo '<option value="'.$reg->idpersona.'">'.$reg->nombre.$doc.'</option>';
         }
         break;
 
     case 'listarArticulosVenta':
         require_once "../modelos/Articulo.php";
         $articulo = new Articulo();
-        $rspta = $articulo->listar();
+        $rspta = $articulo->listarActivosVenta();
         $data = Array();
 
-        while ($reg = $rspta->fetch_object()) {
-            if ($reg->condicion == 1) {
-                $sql_pv = "SELECT precio_venta FROM detalle_ingreso WHERE idarticulo='$reg->idarticulo' ORDER BY iddetalle_ingreso DESC LIMIT 1";
-                $pv_query = ejecutarConsultaSimpleFila($sql_pv);
-                $precio_venta_sugerido = isset($pv_query["precio_venta"]) ? $pv_query["precio_venta"] : "10.00";
+        while ($reg = $rspta->fetch_object()){
+            $foto_mostrar = !empty($reg->imagen) ? $reg->imagen : 'defecto.png';
 
-                $btn_agregar = ($reg->stock > 0) ? 
-                    '<button class="btn btn-primary-modern btn-xs" onclick="agregarDetalle('.$reg->idarticulo.', \''.addslashes($reg->nombre).'\', '.$precio_venta_sugerido.', '.$reg->stock.')"><i class="fa fa-plus"></i></button>' :
-                    '<span class="badge" style="background:#ef4444;">Sin stock</span>';
-
-                $data[] = array(
-                    "0" => $btn_agregar,
-                    "1" => '<strong>'.$reg->nombre.'</strong>',
-                    "2" => $reg->categoria,
-                    "3" => '<code class="barcode-badge">'.$reg->codigo.'</code>',
-                    "4" => ($reg->stock > 5) ? '<span class="stock-badge stock-ok">'.$reg->stock.'</span>' : '<span class="stock-badge stock-low">'.$reg->stock.'</span>',
-                    "5" => "<img src='../files/articulos/".$reg->imagen."' width='38px' height='38px' style='border-radius:8px;' onerror=\"this.src='../public/img/logo1.png';\">"
-                );
-            }
+            $data[] = array(
+                "0" => '<button class="btn btn-warning btn-xs" onclick="agregarDetalle('.$reg->idarticulo.',\''.$reg->nombre.'\',\''.$reg->precio_venta.'\')"><span class="fa fa-plus"></span></button>',
+                "1" => $reg->nombre,
+                "2" => $reg->categoria,
+                "3" => '<code style="background:#e0f2fe; color:#0369a1; padding:2px 6px; border-radius:4px;">'.$reg->codigo.'</code>',
+                "4" => ($reg->stock > 5) ? '<span class="badge" style="background:#dcfce7; color:#166534;">'.$reg->stock.'</span>' : '<span class="badge" style="background:#fee2e2; color:#991b1b;">'.$reg->stock.'</span>',
+                "5" => 'S/ '.number_format($reg->precio_venta, 2),
+                "6" => "<img src='../files/articulos/".$foto_mostrar."' width='38px' height='38px' style='border-radius:8px; object-fit:cover;' onerror=\"this.src='../files/articulos/defecto.png';\">"
+            );
         }
         $results = array(
             "sEcho" => 1,
@@ -150,5 +146,26 @@ switch ($_GET["op"]) {
         );
         echo json_encode($results);
         break;
+
+    case 'kpisVenta':
+        require_once "../config/Conexion.php";
+
+        $sql_total = "SELECT COUNT(*) as total FROM venta";
+        $res_total = ejecutarConsultaSimpleFila($sql_total);
+
+        $sql_ingresos = "SELECT IFNULL(SUM(total_venta), 0) as total_soles FROM venta WHERE estado = 'Aceptado'";
+        $res_ingresos = ejecutarConsultaSimpleFila($sql_ingresos);
+
+        $sql_aceptadas = "SELECT COUNT(*) as total_aceptadas FROM venta WHERE estado = 'Aceptado'";
+        $res_aceptadas = ejecutarConsultaSimpleFila($sql_aceptadas);
+
+        $data = array(
+            "total" => $res_total["total"],
+            "ingresos" => number_format((float)$res_ingresos["total_soles"], 2, '.', ''),
+            "aceptadas" => $res_aceptadas["total_aceptadas"]
+        );
+        echo json_encode($data);
+        break;
 }
+ob_end_flush();
 ?>

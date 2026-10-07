@@ -1,104 +1,41 @@
 <?php 
-require_once "../modelos/Consultas.php";
+ob_start();
+if (strlen(session_id()) < 1){
+    session_start();
+}
+require_once "../config/Conexion.php";
 
-$consulta = new Consultas();
+switch ($_GET["op"]){
 
-switch ($_GET["op"]) {
-    case 'kpis':
-        $ventas = $consulta->totalVentas();
-        $compras = $consulta->totalCompras();
-        $clientes = $consulta->totalClientes();
-        $articulos = $consulta->totalArticulos();
+    case 'comprasfecha':
+        $fecha_inicio = !empty($_REQUEST["fecha_inicio"]) ? limpiarCadena($_REQUEST["fecha_inicio"]) : date('Y-m-d');
+        $fecha_fin = !empty($_REQUEST["fecha_fin"]) ? limpiarCadena($_REQUEST["fecha_fin"]) : date('Y-m-d');
 
-        $total_ventas = isset($ventas["total_venta"]) ? (float)$ventas["total_venta"] : 0;
-        $total_compras = isset($compras["total_compra"]) ? (float)$compras["total_compra"] : 0;
-        $balance = $total_ventas - $total_compras;
+        $sql = "SELECT DATE(i.fecha_hora) as fecha, u.nombre as usuario, p.nombre as proveedor, 
+                       i.tipo_comprobante, i.serie_comprobante, i.num_comprobante, 
+                       i.total_compra, i.impuesto, i.estado 
+                FROM ingreso i 
+                INNER JOIN persona p ON i.idproveedor = p.idpersona 
+                INNER JOIN usuario u ON i.idusuario = u.idusuario 
+                WHERE DATE(i.fecha_hora) >= '$fecha_inicio' AND DATE(i.fecha_hora) <= '$fecha_fin'
+                ORDER BY i.idingreso DESC";
 
-        $data = array(
-            "total_ventas" => number_format($total_ventas, 2),
-            "total_compras" => number_format($total_compras, 2),
-            "balance" => number_format($balance, 2),
-            "total_clientes" => isset($clientes["total_clientes"]) ? $clientes["total_clientes"] : 0,
-            "total_articulos" => isset($articulos["total_articulos"]) ? $articulos["total_articulos"] : 0
-        );
-
-        echo json_encode($data);
-        break;
-
-    case 'comprasUltimos10Dias':
-        $rspta = $consulta->comprasUltimos10Dias();
-        $fechas = array();
-        $totales = array();
-
-        while ($reg = $rspta->fetch_object()) {
-            array_push($fechas, $reg->fecha);
-            array_push($totales, (float)$reg->total);
-        }
-
-        $data = array(
-            "fechas" => array_reverse($fechas),
-            "totales" => array_reverse($totales)
-        );
-
-        echo json_encode($data);
-        break;
-
-    case 'ventasUltimos10Dias':
-        $rspta = $consulta->ventasUltimos10Dias();
-        $fechas = array();
-        $totales = array();
-
-        while ($reg = $rspta->fetch_object()) {
-            array_push($fechas, $reg->fecha);
-            array_push($totales, (float)$reg->total);
-        }
-
-        $data = array(
-            "fechas" => array_reverse($fechas),
-            "totales" => array_reverse($totales)
-        );
-
-        echo json_encode($data);
-        break;
-
-    case 'productosMasVendidos':
-        $rspta = $consulta->productosMasVendidos();
-        $articulos = array();
-        $cantidades = array();
-
-        while ($reg = $rspta->fetch_object()) {
-            array_push($articulos, $reg->nombre);
-            array_push($cantidades, (int)$reg->cantidad);
-        }
-
-        $data = array(
-            "articulos" => $articulos,
-            "cantidades" => $cantidades
-        );
-        echo json_encode($data);
-        break;
-
-    case 'consultaCompras':
-        $fecha_inicio = $_REQUEST["fecha_inicio"];
-        $fecha_fin = $_REQUEST["fecha_fin"];
-
-        $rspta = $consulta->consultaCompras($fecha_inicio, $fecha_fin);
+        $rspta = ejecutarConsulta($sql);
         $data = Array();
 
-        while ($reg = $rspta->fetch_object()) {
+        while ($reg = $rspta->fetch_object()){
             $data[] = array(
                 "0" => $reg->fecha,
                 "1" => $reg->usuario,
-                "2" => '<strong>' . $reg->proveedor . '</strong>',
-                "3" => '<span class="badge-cat">' . $reg->tipo_comprobante . ': ' . $reg->serie_comprobante . '-' . $reg->num_comprobante . '</span>',
-                "4" => '<span style="font-weight:700; color:#0f172a;">S/ ' . number_format($reg->total_compra, 2) . '</span>',
-                "5" => ($reg->impuesto * 100) . ' %',
+                "2" => '<strong>'.$reg->proveedor.'</strong>',
+                "3" => $reg->tipo_comprobante.': '.$reg->serie_comprobante.'-'.$reg->num_comprobante,
+                "4" => '<strong>S/ '.number_format($reg->total_compra, 2).'</strong>',
+                "5" => $reg->impuesto.'%',
                 "6" => ($reg->estado == 'Aceptado') ? 
-                    '<span class="badge-pill-modern badge-pill-success"><span class="dot-indicator"></span> Aceptado</span>' : 
-                    '<span class="badge-pill-modern badge-pill-danger"><span class="dot-indicator"></span> Anulado</span>'
+                    '<span class="badge" style="background:#dcfce7; color:#166534; padding:5px 10px; border-radius:12px;">Aceptado</span>' : 
+                    '<span class="badge" style="background:#fee2e2; color:#991b1b; padding:5px 10px; border-radius:12px;">Anulado</span>'
             );
         }
-
         $results = array(
             "sEcho" => 1,
             "iTotalRecords" => count($data),
@@ -108,28 +45,65 @@ switch ($_GET["op"]) {
         echo json_encode($results);
         break;
 
-    case 'consultaVentas':
-        $fecha_inicio = $_REQUEST["fecha_inicio"];
-        $fecha_fin = $_REQUEST["fecha_fin"];
-        $idcliente = $_REQUEST["idcliente"];
+    case 'kpisComprasFecha':
+        $fecha_inicio = !empty($_REQUEST["fecha_inicio"]) ? limpiarCadena($_REQUEST["fecha_inicio"]) : date('Y-m-d');
+        $fecha_fin = !empty($_REQUEST["fecha_fin"]) ? limpiarCadena($_REQUEST["fecha_fin"]) : date('Y-m-d');
 
-        $rspta = $consulta->consultaVentas($fecha_inicio, $fecha_fin, $idcliente);
+        $sql = "SELECT IFNULL(SUM(total_compra), 0) as total_rango, COUNT(*) as cantidad 
+                FROM ingreso 
+                WHERE DATE(fecha_hora) >= '$fecha_inicio' AND DATE(fecha_hora) <= '$fecha_fin' 
+                AND estado = 'Aceptado'";
+
+        $rspta = ejecutarConsulta($sql);
+        $reg = $rspta->fetch_object();
+
+        $total = ($reg) ? (float)$reg->total_rango : 0;
+        $cantidad = ($reg) ? (int)$reg->cantidad : 0;
+        $promedio = ($cantidad > 0) ? ($total / $cantidad) : 0;
+
+        $data = array(
+            "total" => number_format($total, 2, '.', ''),
+            "cantidad" => $cantidad,
+            "promedio" => number_format($promedio, 2, '.', '')
+        );
+        echo json_encode($data);
+        break;
+
+    case 'ventasfechacliente':
+        $fecha_inicio = !empty($_REQUEST["fecha_inicio"]) ? limpiarCadena($_REQUEST["fecha_inicio"]) : date('Y-m-d');
+        $fecha_fin = !empty($_REQUEST["fecha_fin"]) ? limpiarCadena($_REQUEST["fecha_fin"]) : date('Y-m-d');
+        $idcliente = !empty($_REQUEST["idcliente"]) ? limpiarCadena($_REQUEST["idcliente"]) : "";
+
+        $sql = "SELECT DATE(v.fecha_hora) as fecha, u.nombre as usuario, p.nombre as cliente, 
+                       v.tipo_comprobante, v.serie_comprobante, v.num_comprobante, 
+                       v.total_venta, v.impuesto, v.estado 
+                FROM venta v 
+                INNER JOIN persona p ON v.idcliente = p.idpersona 
+                INNER JOIN usuario u ON v.idusuario = u.idusuario 
+                WHERE DATE(v.fecha_hora) >= '$fecha_inicio' AND DATE(v.fecha_hora) <= '$fecha_fin'";
+
+        if (!empty($idcliente)) {
+            $sql .= " AND v.idcliente = '$idcliente'";
+        }
+
+        $sql .= " ORDER BY v.idventa DESC";
+
+        $rspta = ejecutarConsulta($sql);
         $data = Array();
 
-        while ($reg = $rspta->fetch_object()) {
+        while ($reg = $rspta->fetch_object()){
             $data[] = array(
                 "0" => $reg->fecha,
                 "1" => $reg->usuario,
-                "2" => '<strong>' . $reg->cliente . '</strong>',
-                "3" => '<span class="badge-cat">' . $reg->tipo_comprobante . ': ' . $reg->serie_comprobante . '-' . $reg->num_comprobante . '</span>',
-                "4" => '<span style="font-weight:700; color:#0f172a;">S/ ' . number_format($reg->total_venta, 2) . '</span>',
-                "5" => ($reg->impuesto * 100) . ' %',
+                "2" => '<strong>'.$reg->cliente.'</strong>',
+                "3" => $reg->tipo_comprobante.': '.$reg->serie_comprobante.'-'.$reg->num_comprobante,
+                "4" => '<strong>S/ '.number_format($reg->total_venta, 2).'</strong>',
+                "5" => $reg->impuesto.'%',
                 "6" => ($reg->estado == 'Aceptado') ? 
-                    '<span class="badge-pill-modern badge-pill-success"><span class="dot-indicator"></span> Aceptado</span>' : 
-                    '<span class="badge-pill-modern badge-pill-danger"><span class="dot-indicator"></span> Anulado</span>'
+                    '<span class="badge" style="background:#dcfce7; color:#166534; padding:5px 10px; border-radius:12px;">Aceptado</span>' : 
+                    '<span class="badge" style="background:#fee2e2; color:#991b1b; padding:5px 10px; border-radius:12px;">Anulado</span>'
             );
         }
-
         $results = array(
             "sEcho" => 1,
             "iTotalRecords" => count($data),
@@ -137,6 +111,34 @@ switch ($_GET["op"]) {
             "aaData" => $data
         );
         echo json_encode($results);
+        break;
+
+    case 'kpisVentasFecha':
+        $fecha_inicio = !empty($_REQUEST["fecha_inicio"]) ? limpiarCadena($_REQUEST["fecha_inicio"]) : date('Y-m-d');
+        $fecha_fin = !empty($_REQUEST["fecha_fin"]) ? limpiarCadena($_REQUEST["fecha_fin"]) : date('Y-m-d');
+        $idcliente = !empty($_REQUEST["idcliente"]) ? limpiarCadena($_REQUEST["idcliente"]) : "";
+
+        $filtroCliente = !empty($idcliente) ? " AND idcliente = '$idcliente'" : "";
+
+        $sql = "SELECT IFNULL(SUM(total_venta), 0) as total_rango, COUNT(*) as cantidad 
+                FROM venta 
+                WHERE DATE(fecha_hora) >= '$fecha_inicio' AND DATE(fecha_hora) <= '$fecha_fin' 
+                AND estado = 'Aceptado' $filtroCliente";
+
+        $rspta = ejecutarConsulta($sql);
+        $reg = $rspta->fetch_object();
+
+        $total = ($reg) ? (float)$reg->total_rango : 0;
+        $cantidad = ($reg) ? (int)$reg->cantidad : 0;
+        $promedio = ($cantidad > 0) ? ($total / $cantidad) : 0;
+
+        $data = array(
+            "total" => number_format($total, 2, '.', ''),
+            "cantidad" => $cantidad,
+            "promedio" => number_format($promedio, 2, '.', '')
+        );
+        echo json_encode($data);
         break;
 }
+ob_end_flush();
 ?>

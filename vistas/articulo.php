@@ -191,6 +191,16 @@ if (isset($_SESSION['almacen']) && $_SESSION['almacen'] == 1) {
         background: #ffffff;
         outline: none;
     }
+
+    .barcode-box-preview {
+        margin-top: 12px;
+        padding: 12px;
+        background: #f8fafc;
+        border: 1.5px dashed #cbd5e1;
+        border-radius: 12px;
+        text-align: center;
+        display: none;
+    }
 </style>
 
 <div class="content-wrapper">
@@ -286,8 +296,8 @@ if (isset($_SESSION['almacen']) && $_SESSION['almacen'] == 1) {
 
                         <div class="row" style="margin-top: 10px;">
                             <div class="col-md-6 form-group">
-                                <label>Stock (*)</label>
-                                <input type="number" class="input-field-custom" name="stock" id="stock" required>
+                                <label>Stock Inicial (*)</label>
+                                <input type="number" class="input-field-custom" name="stock" id="stock" value="0" required>
                             </div>
 
                             <div class="col-md-6 form-group">
@@ -308,11 +318,14 @@ if (isset($_SESSION['almacen']) && $_SESSION['almacen'] == 1) {
 
                             <div class="col-md-6 form-group">
                                 <label>Código de Barras</label>
-                                <input type="text" class="input-field-custom" name="codigo" id="codigo" placeholder="Código de barras">
-                                <button class="btn btn-default btn-sm" type="button" onclick="generarbarcode()" style="margin-top: 8px; border-radius: 8px;">
-                                    <i class="fa fa-barcode"></i> Generar Barra
-                                </button>
-                                <div id="print" style="margin-top: 10px;">
+                                <div style="display: flex; gap: 8px;">
+                                    <input type="text" class="input-field-custom" name="codigo" id="codigo" placeholder="Ej. 775123456789">
+                                    <button class="btn btn-primary" type="button" onclick="generarCodigoAleatorio()" style="border-radius: 10px; font-weight: 700; padding: 0 18px; white-space: nowrap; height: 44px; background: #2563eb; border: none;">
+                                        <i class="fa fa-magic"></i> Auto
+                                    </button>
+                                </div>
+                                
+                                <div id="print" class="barcode-box-preview">
                                     <svg id="barcode"></svg>
                                 </div>
                             </div>
@@ -342,6 +355,5 @@ if (isset($_SESSION['almacen']) && $_SESSION['almacen'] == 1) {
 require 'footer.php';
 ?>
 
-<!-- Librería de códigos de barra JS -->
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
 <script type="text/javascript" src="scripts/articulo.js"></script>

@@ -1,0 +1,7 @@
+# XAMPP / Apache / Sistema operativo
+.DS_Store
+Thumbs.db
+*.log
+
+# Opcional: imágenes temporales de subida si no quieres sobrecargar el repo
+# files/articulos/*.tmp

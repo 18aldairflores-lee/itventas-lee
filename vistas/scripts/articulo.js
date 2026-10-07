@@ -11,6 +11,11 @@ function init() {
 
     cargarCategorias();
     $("#imagenmuestra").hide();
+
+    // Redibujar código de barras al escribir
+    $("#codigo").on("input", function() {
+        generarbarcode();
+    });
 }
 
 function cargarKPIs() {
@@ -95,6 +100,15 @@ function guardaryeditar(e) {
         return false;
     }
 
+    if ($("#idcategoria").val() == "" || $("#idcategoria").val() == null) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Categoría requerida',
+            text: 'Seleccione una categoría válida.'
+        });
+        return false;
+    }
+
     $("#btnGuardar").prop("disabled", true);
     var formData = new FormData($("#formulario")[0]);
 
@@ -115,11 +129,11 @@ function guardaryeditar(e) {
             tabla.ajax.reload();
             cargarKPIs();
         },
-        error: function() {
+        error: function(xhr, status, error) {
             Swal.fire({
                 icon: 'error',
                 title: 'Error de servidor',
-                text: 'No se pudo conectar con el servidor.'
+                text: 'No se pudo conectar con el servidor: ' + error
             });
             $("#btnGuardar").prop("disabled", false);
         }
@@ -206,10 +220,10 @@ function generarbarcode() {
                 format: "CODE128",
                 lineColor: "#0f172a",
                 width: 2,
-                height: 40,
+                height: 42,
                 displayValue: true
             });
-            $("#print").show();
+            $("#print").fadeIn(200);
         } catch(e) {
             console.log(e);
         }
@@ -217,9 +231,5 @@ function generarbarcode() {
         $("#print").hide();
     }
 }
-
-$("#codigo").on("input", function() {
-    generarbarcode();
-});
 
 init();
